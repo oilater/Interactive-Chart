@@ -1,109 +1,96 @@
 // HTML 요소 가져오기
 const valueTable = document.querySelector(".value-table");
-const advanceValueTextarea = document.querySelector(".advanced-value-textarea");
+const editTextarea = document.querySelector(".advanced-value-textarea");
 
 const addValueButton = document.querySelector(".add-value-button");
 const applyEditButton = document.querySelector(".apply-advanced-value-button");
 
 // 이벤트 리스너 추가
-addValueButton.addEventListener('click', handleAddValueClick);
-applyEditButton.addEventListener('click', handleApplyEditClick);
+addValueButton.addEventListener('click', clickAddValueHandler);
+applyEditButton.addEventListener('click', clickApplyEditHandler);
 
 // 전체 데이터를 관리할 객체
-const wholeData = {};
+let wholeData = {};
 
-// 유저 데이터 class
+// 유저 데이터 클래스
 class UserData {
     constructor(id, value) {
         this.id = id;
         this.value = value;
-        this.key = crypto.randomUUID();
+        this.key = crypto.randomUUID(); // 값 삭제 시, 전체 데이터에서 해당 데이터의 키를 식별하기 위한 필드
     }
 
-    // 각 userCard를 생성하는 메소드
-    render() {
-        const userCard = createUserCard(this);
+    // 카드 UI Component를 생성한 뒤 반환하는 메소드
+    initCard()
+    {
+        // 카드 element 초기화
+        const userCard = document.createElement("div");
+        userCard.className = "user-data";
+
+        // 삭제 버튼 초기화
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete-button";
+        deleteButton.textContent = "삭제";
+        deleteButton.addEventListener("click", () => this.delete(userCard));
+
+        userCard.innerHTML = `
+            <p class="user-id">${this.id}</p>
+            <p class="user-value">${this.value}</p>
+        `;
+        userCard.appendChild(deleteButton);
+
+        // 완성된 카드 반환
         return userCard;
     }
 
-    // 값 추가 시 테이블에 추가하는 메소드
-    appendTo(table) {
-        table.appendChild(this.render());
+    // 값 추가 시 카드를 UI에 반영하는 메소드
+    showCard() {
+        valueTable.appendChild(this.initCard());
     }
 
     // 값 삭제 시 테이블 및 wholeData에서 삭제하는 메소드
-    delete(userCard) {
-        // 카드 삭제
-        userCard.remove();
-
-        // 데이터 삭제
+    delete(card) {
+        card.remove();
         if (wholeData == null || !wholeData[this.key]) {
             return;
         }
         delete wholeData[this.key];
-        console.log(wholeData); // 삭제
+        updateTextArea();
     }
 }
 
-// 화면에 모든 유저의 id, value를 보여주기 위해 호출하는 함수
-function createUserCard(userData)
-{
-    // 카드 element 생성
-    const userCard = document.createElement("div");
-    userCard.className = "user-data";
-
-    // 삭제 버튼 및 이벤트 리스너 설정
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "삭제";
-    deleteButton.className = "delete-button";
-    deleteButton.addEventListener("click", () => userData.delete(userCard));
-
-    // 카드엔 유저의 id와 value, 삭제 버튼을 보여줌
-    userCard.innerHTML = `
-        <p class="user-id">${userData.id}</p>
-        <p class="user-value">${userData.value}</p>
-    `;
-    userCard.appendChild(deleteButton);
-
-    // 완성된 카드를 반환
-    return userCard;
-}
-
-// Add 버튼 클릭 시 실행되는 이벤트리스너
-function handleAddValueClick () {
-    // 유저가 입력한 id, value의 element
+// '값 추가' 이벤트 핸들러
+function clickAddValueHandler () {
     const idInput = document.querySelector('#id-input');
     const valueInput = document.querySelector('#value-input');
 
-    // null 및 유효성 검사 후 반환
+    // id, value의 유효성 검사 후 반환
     const [id, value] = getValidateInput(idInput, valueInput);
     
     const newData = new UserData(id, value);
+    
     // UI와 Data 객체에 값 추가
-    setData(newData);
+    updateWith(newData);
+    updateTextArea();
 
     idInput.value = "";
     valueInput.value = "";
 };
 
-function getValidateInput(idInput, valueInput)
-{    
-    // HTML element에 대한 null 체크
+function getValidateInput(idInput, valueInput) {    
     if (!idInput || !valueInput)
     {
-        alert("F5를 눌러 페이지를 새로고침 하세요!")
         return;
     }
 
     const id = idInput.value;
     const value = valueInput.value;
 
-    // 유저가 입력한 id, value에 대한 유효성 검사
-    if (!id.trim()) {
+    if (id.trim() == null) {
         alert("ID를 입력해주세요!");
         return;
     }
-    else if (!value.trim()) {
+    else if (value.trim() == null) {
         alert("VALUE를 입력해주세요!");
         return;
     }
@@ -111,16 +98,61 @@ function getValidateInput(idInput, valueInput)
     return [id, value];
 }
 
-function setData(newData)
+function updateWith(newData)
 {
-    // wholeData 객체에 추가
     wholeData[newData.key] = newData;
-    // 테이블에 그려줌
-    newData.appendTo(valueTable);
+    newData.showCard();
 }
 
-// 고급 수정 Apply 버튼 클릭 시 실행되는 이벤트리스너
-function handleApplyEditClick()
+// '값 고급 편집' 이벤트 핸들러
+function clickApplyEditHandler()
 {
+    const textareaInput = document.querySelector('.advanced-value-textarea');
 
+    // JSON 유효성 검사
+    let parsedData;
+    try {
+        parsedData = JSON.parse(textareaInput.value);
+    } catch (error) {
+        alert("JSON 형식이 올바른 지 확인하세요!");
+        return;
+    }
+    
+    // 배열 유효성 검사
+    if (!Array.isArray(parsedData)) {
+        alert("JSON 배열 형식이 아닙니다!");
+        return;
+    }
+
+    // 데이터 및 UI 초기화
+    wholeData = {};
+    valueTable.innerHTML = '';
+
+    // 새로운 데이터 적용
+    parsedData.forEach(({ id, value }) => {
+        if (id.trim() == null) 
+        {
+            alert("비어있는 ID 값이 있는지 확인하세요!")
+            return;
+        }
+        const newData = new UserData(id.trim(), value);
+        updateWith(newData);
+    });
+    updateTextArea();
+}
+
+// 값 고급 편집 Textarea 업데이트
+function updateTextArea()
+{
+    const dataList = Object.values(wholeData).map(user => ({
+        id: user.id,
+        value: Number(user.value),
+    }));
+
+    if (dataList.length == 0) {
+        editTextarea.value = '';
+        return;
+    } 
+    const jsonString = JSON.stringify(dataList, null, 2);
+    editTextarea.value = `${jsonString}`
 }
