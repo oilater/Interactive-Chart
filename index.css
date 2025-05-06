@@ -1,0 +1,35 @@
+/* 기본 CSS 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body section {
+    max-width: 80vw;
+    margin: 0 auto;
+}
+
+/* 헤더 */
+header {
+    height: 5rem;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+
+header .applicant-name {
+    margin-right: 3rem;
+}
+
+/* 유저 데이터 */
+.user-data {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
