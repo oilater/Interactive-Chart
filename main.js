@@ -13,58 +13,39 @@ applyEditButton.addEventListener('click', clickApplyEditHandler);
 // 전체 Value를 관리할 객체
 let wholeData = {};
 
-// 유저 데이터 클래스
 class UserData {
     constructor(id, value) {
         this.id = id;
         this.value = value;
-        this.key = crypto.randomUUID(); // 값 삭제 시, 전체 데이터에서 해당 데이터의 키를 식별하기 위한 필드
+        this.key = crypto.randomUUID();
     }
 
-    // 카드 UI 컴포넌트 생성 메소드
-    createCard()
-    {
-        // 카드 element 초기화
-        const userCard = document.createElement("div");
-        userCard.className = "user-data";
-
-        // 삭제 버튼 초기화
-        const deleteButton = document.createElement("button");
-        deleteButton.className = "delete-button";
-        deleteButton.textContent = "삭제";
-        deleteButton.addEventListener("click", () => this.delete(userCard));
-
-        userCard.innerHTML = `
-            <p class="user-id">${this.id}</p>
-            <p class="user-value">${this.value}</p>
-        `;
-        userCard.appendChild(deleteButton);
-
-        valueTable.appendChild(userCard);
+    createCard() {
+        const template = document.querySelector('#card-template');
+        const clone = template.content.cloneNode(true);
+    
+        const card = clone.querySelector('.user-data');
+        card.querySelector('.user-id').textContent = this.id;
+        card.querySelector('.user-value').textContent = this.value;
+    
+        const deleteButton = card.querySelector('.delete-button');
+        deleteButton.addEventListener("click", () => this.delete(card));
+    
+        valueTable.appendChild(card);
     }
 
     createGraph() {
-        const graphWrapper = document.createElement("div");
-        const graphValue = document.createElement("div");
-        const graph = document.createElement("div");
-        const graphBackground = document.createElement("div");
-        const graphId = document.createElement("div");
-
-        graphWrapper.className = "graph-wrapper";
-        graphId.className = "graph-id";
-        graph.className = "graph";
-        graphBackground.className = "graph-background";
-        graphValue.className = "graph-value";
-
-        graphId.innerHTML = `<p class="graph-id">${this.id}</p>`;
-        // graphValue.innerHTML = `<p class="graph-value">${this.value}</p>`;
-
-        graphBackground.appendChild(graph);
-        graphWrapper.appendChild(graphId);
-        graphWrapper.appendChild(graphBackground);
-        graphWrapper.appendChild(graphValue);
+        const template = document.querySelector('#graph-template');
+        const clone = template.content.cloneNode(true);
+    
+        const graphWrapper = clone.querySelector('.graph-wrapper');
+        const graph = graphWrapper.querySelector('.graph');
+        const graphValue = graphWrapper.querySelector('.graph-value');
+        const graphId = graphWrapper.querySelector('.graph-id');
+    
+        graphId.textContent = this.id;
+    
         graphTable.appendChild(graphWrapper);
-
         animateGraph(graph, this.value, graphValue);
     }
 
@@ -79,24 +60,31 @@ class UserData {
     }
 }
 
-function animateGraph(graph, targetValue, currentValue)
-{
+function animateGraph(graph, targetValue, currentValue) {
     let height = 0;
-    
-    function animate() {
-        if (height < targetValue) {
-        height += 4;
-        // 숫자 증가
-        currentValue.innerHTML = `<p class="graph-value">${height <= targetValue ? height : targetValue}</p>`;
-        // 그래프 높이 증가
+    const animationDuration = 600;
+    const startTime = performance.now();
+
+    function animate(time) {
+        const progress = (time - startTime) / animationDuration;
+        height = Math.min(progress * targetValue, targetValue);
+
+        // 숫자 애니메이션 및 색상 설정
+        currentValue.innerHTML = `<p class="graph-value">${height <= targetValue ? Math.floor(height) : targetValue}</p>`;
+        currentValue.style.setProperty('--graph-value-color', `${targetValue >= 100 ? '#1873cc' : targetValue >= 50 ? 'dodgerblue' : '#1e90ff80'}`);
+        
+        // 그래프 높이 애니메이션 및 색상 설정
         graph.style.setProperty('--graph-height', `${height / 100 * graphBackgroundHeight}rem`);
-        requestAnimationFrame(animate);
+        graph.style.setProperty('--graph-color', `${targetValue >= 100 ? '#1873cc' : targetValue >= 50 ? 'dodgerblue' : '#1e90ff80'}`);
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
         }
     }
-    animate();
+    
+    requestAnimationFrame(animate);
 }
-
-// '값 추가' 이벤트 핸들러
+// 값 추가 클릭 이벤트
 function clickAddValueHandler () {
     const idInput = document.querySelector('#id-input').value;
     const valueInput = document.querySelector('#value-input').value;
@@ -105,7 +93,6 @@ function clickAddValueHandler () {
     const [id, value] = getValidateInput(idInput, valueInput);
     
     const newData = new UserData(id, value);
-    
     appendValue(newData);
     updateAdvancedEditTextarea();
 
@@ -126,16 +113,14 @@ function getValidateInput(id, value) {
     return [id, value];
 }
 
-function appendValue(newData)
-{
+function appendValue(newData) {
     wholeData[newData.key] = newData;
     newData.createCard();
     newData.createGraph();
 }
 
-// '값 고급 편집' 이벤트 핸들러
-function clickApplyEditHandler()
-{
+// 값 고급 편집 클릭 이벤트
+function clickApplyEditHandler() {
     // 유효성 검사
     let parsedData;
     try {
@@ -166,9 +151,7 @@ function clickApplyEditHandler()
     updateAdvancedEditTextarea();
 }
 
-// Textarea 업데이트
-function updateAdvancedEditTextarea()
-{
+function updateAdvancedEditTextarea() {
     const dataList = Object.values(wholeData).map(user => ({
         id: user.id,
         value: Number(user.value),
