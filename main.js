@@ -1,5 +1,6 @@
 // HTML 요소
 const valueTable = document.querySelector(".value-table");
+const graphTable = document.querySelector(".graph-table");
 const editTextarea = document.querySelector(".advanced-value-textarea");
 
 const addValueButton = document.querySelector(".add-value-button");
@@ -42,6 +43,31 @@ class UserData {
         valueTable.appendChild(userCard);
     }
 
+    createGraph() {
+        const graphWrapper = document.createElement("div");
+        const graphValue = document.createElement("div");
+        const graph = document.createElement("div");
+        const graphBackground = document.createElement("div");
+        const graphId = document.createElement("div");
+
+        graphWrapper.className = "graph-wrapper";
+        graphId.className = "graph-id";
+        graph.className = "graph";
+        graphBackground.className = "graph-background";
+        graphValue.className = "graph-value";
+
+        graphId.innerHTML = `<p class="graph-id">${this.id}</p>`;
+        graphValue.innerHTML = `<p class="graph-value">${this.value}</p>`;
+
+        graphBackground.appendChild(graph);
+        graphWrapper.appendChild(graphId);
+        graphWrapper.appendChild(graphBackground);
+        graphWrapper.appendChild(graphValue);
+        graphTable.appendChild(graphWrapper);
+
+        animateGraph(graph, this.value);
+    }
+
     // 값 삭제 시 테이블 및 wholeData에서 삭제하는 메소드
     delete(card) {
         card.remove();
@@ -51,6 +77,20 @@ class UserData {
         delete wholeData[this.key];
         updateTextArea();
     }
+}
+
+function animateGraph(graph, targetValue)
+{
+    let height = 0;
+    
+    function animate() {
+        if (height < targetValue) {
+        height += 4;
+        graph.style.setProperty('--graph-height', `${height}px`);
+        requestAnimationFrame(animate);
+        }
+    }
+    animate();
 }
 
 // '값 추가' 이벤트 핸들러
@@ -65,14 +105,13 @@ function clickAddValueHandler () {
     
     appendValue(newData);
     updateTextArea();
-    
+
     idInput.value = "";
     valueInput.value = "";
 };
 
 function getValidateInput(idInput, valueInput) {    
-    if (!idInput || !valueInput)
-    {
+    if (!idInput || !valueInput) {
         return;
     }
 
@@ -95,6 +134,7 @@ function appendValue(newData)
 {
     wholeData[newData.key] = newData;
     newData.createCard();
+    newData.createGraph();
 }
 
 // '값 고급 편집' 이벤트 핸들러
