@@ -1,4 +1,4 @@
-// HTML 요소 가져오기
+// HTML 요소
 const valueTable = document.querySelector(".value-table");
 const editTextarea = document.querySelector(".advanced-value-textarea");
 
@@ -20,8 +20,8 @@ class UserData {
         this.key = crypto.randomUUID(); // 값 삭제 시, 전체 데이터에서 해당 데이터의 키를 식별하기 위한 필드
     }
 
-    // 카드 UI Component를 생성한 뒤 반환하는 메소드
-    initCard()
+    // 카드 UI 컴포넌트 생성 메소드
+    createCard()
     {
         // 카드 element 초기화
         const userCard = document.createElement("div");
@@ -39,13 +39,7 @@ class UserData {
         `;
         userCard.appendChild(deleteButton);
 
-        // 완성된 카드 반환
-        return userCard;
-    }
-
-    // 값 추가 시 카드를 UI에 반영하는 메소드
-    showCard() {
-        valueTable.appendChild(this.initCard());
+        valueTable.appendChild(userCard);
     }
 
     // 값 삭제 시 테이블 및 wholeData에서 삭제하는 메소드
@@ -69,10 +63,9 @@ function clickAddValueHandler () {
     
     const newData = new UserData(id, value);
     
-    // UI와 Data 객체에 값 추가
-    updateWith(newData);
+    appendValue(newData);
     updateTextArea();
-
+    
     idInput.value = "";
     valueInput.value = "";
 };
@@ -86,11 +79,11 @@ function getValidateInput(idInput, valueInput) {
     const id = idInput.value;
     const value = valueInput.value;
 
-    if (id.trim() == null) {
+    if (!id.trim()) {
         alert("ID를 입력해주세요!");
         return;
     }
-    else if (value.trim() == null) {
+    else if (!value.trim()) {
         alert("VALUE를 입력해주세요!");
         return;
     }
@@ -98,10 +91,10 @@ function getValidateInput(idInput, valueInput) {
     return [id, value];
 }
 
-function updateWith(newData)
+function appendValue(newData)
 {
     wholeData[newData.key] = newData;
-    newData.showCard();
+    newData.createCard();
 }
 
 // '값 고급 편집' 이벤트 핸들러
@@ -136,7 +129,7 @@ function clickApplyEditHandler()
             return;
         }
         const newData = new UserData(id.trim(), value);
-        updateWith(newData);
+        appendValue(newData);
     });
     updateTextArea();
 }
