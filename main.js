@@ -1,16 +1,16 @@
-// HTML 요소
 const valueTable = document.querySelector(".value-table");
 const graphTable = document.querySelector(".graph-table");
-const editTextarea = document.querySelector(".advanced-value-textarea");
+const advancedEditTextarea = document.querySelector(".advanced-value-textarea");
 
 const addValueButton = document.querySelector(".add-value-button");
 const applyEditButton = document.querySelector(".apply-advanced-value-button");
 
-// 이벤트 리스너 추가
+const graphBackgroundHeight = 20;
+
 addValueButton.addEventListener('click', clickAddValueHandler);
 applyEditButton.addEventListener('click', clickApplyEditHandler);
 
-// 전체 데이터를 관리할 객체
+// 전체 Value를 관리할 객체
 let wholeData = {};
 
 // 유저 데이터 클래스
@@ -57,7 +57,7 @@ class UserData {
         graphValue.className = "graph-value";
 
         graphId.innerHTML = `<p class="graph-id">${this.id}</p>`;
-        graphValue.innerHTML = `<p class="graph-value">${this.value}</p>`;
+        // graphValue.innerHTML = `<p class="graph-value">${this.value}</p>`;
 
         graphBackground.appendChild(graph);
         graphWrapper.appendChild(graphId);
@@ -65,7 +65,7 @@ class UserData {
         graphWrapper.appendChild(graphValue);
         graphTable.appendChild(graphWrapper);
 
-        animateGraph(graph, this.value);
+        animateGraph(graph, this.value, graphValue);
     }
 
     // 값 삭제 시 테이블 및 wholeData에서 삭제하는 메소드
@@ -75,18 +75,21 @@ class UserData {
             return;
         }
         delete wholeData[this.key];
-        updateTextArea();
+        updateAdvancedEditTextarea();
     }
 }
 
-function animateGraph(graph, targetValue)
+function animateGraph(graph, targetValue, currentValue)
 {
     let height = 0;
     
     function animate() {
         if (height < targetValue) {
         height += 4;
-        graph.style.setProperty('--graph-height', `${height}px`);
+        // 숫자 증가
+        currentValue.innerHTML = `<p class="graph-value">${height <= targetValue ? height : targetValue}</p>`;
+        // 그래프 높이 증가
+        graph.style.setProperty('--graph-height', `${height / 100 * graphBackgroundHeight}rem`);
         requestAnimationFrame(animate);
         }
     }
@@ -95,8 +98,8 @@ function animateGraph(graph, targetValue)
 
 // '값 추가' 이벤트 핸들러
 function clickAddValueHandler () {
-    const idInput = document.querySelector('#id-input');
-    const valueInput = document.querySelector('#value-input');
+    const idInput = document.querySelector('#id-input').value;
+    const valueInput = document.querySelector('#value-input').value;
 
     // id, value의 유효성 검사 후 반환
     const [id, value] = getValidateInput(idInput, valueInput);
@@ -104,20 +107,13 @@ function clickAddValueHandler () {
     const newData = new UserData(id, value);
     
     appendValue(newData);
-    updateTextArea();
+    updateAdvancedEditTextarea();
 
     idInput.value = "";
     valueInput.value = "";
 };
 
-function getValidateInput(idInput, valueInput) {    
-    if (!idInput || !valueInput) {
-        return;
-    }
-
-    const id = idInput.value;
-    const value = valueInput.value;
-
+function getValidateInput(id, value) {
     if (!id.trim()) {
         alert("ID를 입력해주세요!");
         return;
@@ -140,24 +136,20 @@ function appendValue(newData)
 // '값 고급 편집' 이벤트 핸들러
 function clickApplyEditHandler()
 {
-    const textareaInput = document.querySelector('.advanced-value-textarea');
-
-    // JSON 유효성 검사
+    // 유효성 검사
     let parsedData;
     try {
-        parsedData = JSON.parse(textareaInput.value);
+        parsedData = JSON.parse(advancedEditTextarea.value);
     } catch (error) {
         alert("JSON 형식이 올바른 지 확인하세요!");
         return;
     }
     
-    // 배열 유효성 검사
     if (!Array.isArray(parsedData)) {
         alert("JSON 배열 형식이 아닙니다!");
         return;
     }
 
-    // 데이터 및 UI 초기화
     wholeData = {};
     valueTable.innerHTML = '';
 
@@ -171,11 +163,11 @@ function clickApplyEditHandler()
         const newData = new UserData(id.trim(), value);
         appendValue(newData);
     });
-    updateTextArea();
+    updateAdvancedEditTextarea();
 }
 
-// 값 고급 편집 Textarea 업데이트
-function updateTextArea()
+// Textarea 업데이트
+function updateAdvancedEditTextarea()
 {
     const dataList = Object.values(wholeData).map(user => ({
         id: user.id,
@@ -183,9 +175,9 @@ function updateTextArea()
     }));
 
     if (dataList.length == 0) {
-        editTextarea.value = '';
+        advancedEditTextarea.value = '';
         return;
     } 
     const jsonString = JSON.stringify(dataList, null, 2);
-    editTextarea.value = `${jsonString}`
+    advancedEditTextarea.value = `${jsonString}`
 }

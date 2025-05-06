@@ -113,8 +113,12 @@ header .applicant-name {
 
 .graph-id {
     padding-top: 0.5rem;
+    font-size: 1.1rem;
 }
 
 .graph-value {
     padding-bottom: 0.5rem;
+    font-size: 2rem;
+    color: dodgerblue;
+    font-weight: 600;
 }
