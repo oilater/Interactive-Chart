@@ -6,9 +6,24 @@
 }
 
 body section {
-    max-width: 80vw;
+    max-width: 50vw;
     min-height: 30vh;
     margin: 0 auto;
+    margin-top: 3rem;
+    margin-bottom: 5rem;
+}
+
+section .section-title {
+    font-size: 1.7rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+section .section-description {
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 2rem;
+    color: rgba(128, 128, 128, 0.4);
 }
 
 /* 헤더 */
@@ -44,7 +59,19 @@ header .applicant-name {
     border-radius: 4px;
     resize: none;
     box-sizing: border-box;
-    /* padding 포함한 width 계산 */
 }
 
 .edit-advanced-value .apply-advanced-value-button {}
+
+/* 그래프 */
+.graph .graph-wrapper {
+    width: 40vw;
+    height: 30vw;
+    display: flex;
+    background-color: antiquewhite;
+}
+
+.graph .graph-chart {
+    width: 100%;
+    height: 100%;
+}
