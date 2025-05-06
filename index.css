@@ -7,6 +7,7 @@
 
 body section {
     max-width: 80vw;
+    min-height: 30vh;
     margin: 0 auto;
 }
 
@@ -33,3 +34,17 @@ header .applicant-name {
     border-radius: 8px;
     background-color: #f9f9f9;
 }
+
+.edit-advanced-value .advanced-value-textarea {
+    width: 80%;
+    height: 30rem;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+    box-sizing: border-box;
+    /* padding 포함한 width 계산 */
+}
+
+.edit-advanced-value .apply-advanced-value-button {}
