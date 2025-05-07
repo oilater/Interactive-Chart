@@ -103,11 +103,14 @@ function clickAddValueHandler () {
 
 function getValidateInput(id, value) {
     if (!id.trim()) {
-        alert("ID를 입력해주세요!");
+        alert("아이디를 입력해주세요!");
         return [null, null];
     }
     else if (!value.trim()) {
-        alert("VALUE를 입력해주세요!");
+        alert("값을 입력해주세요!");
+        return [null, null];
+    } else if (isNaN(value)) {
+        alert("숫자 값만 입력해주세요!");
         return [null, null];
     }
 
@@ -141,9 +144,9 @@ function clickApplyEditHandler() {
 
     // 새로운 데이터 적용
     parsedData.forEach(({ id, value }) => {
-        if (id.trim() == null) 
+        if (!id.trim()) 
         {
-            alert("비어있는 ID 값이 있는지 확인하세요!")
+            alert("빈 아이디 값이 있는지 확인하세요!")
             return;
         }
         const newData = new Data(id.trim(), value);
