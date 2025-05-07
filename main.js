@@ -1,7 +1,12 @@
 // 상수 선언 및 HTML 요소 설정
 const graphBackgroundHeight = 20;
-const graphAnimationDuration = 600;
+const graphAnimationDuration = 1000;
 
+const graphSection = document.querySelector(".graph-section");
+const editSection = document.querySelector(".edit-value-section");
+const editAdvanceSection = document.querySelector(".edit-advanced-value-section");
+
+const addSectionText = document.querySelector(".add-value-description");
 const valueTable = document.querySelector(".value-table");
 const graphTable = document.querySelector(".graph-table");
 const editTextarea = document.querySelector(".advanced-value-textarea");
@@ -25,22 +30,27 @@ class Data {
         const card = clonedCard.querySelector('.card-wrapper');
         card.querySelector('.card-id').textContent = this.id;
         card.querySelector('.card-value').textContent = this.value;
-        const deleteButton = card.querySelector('.delete-button');
+        const deleteButton = card.querySelector('.card-delete-button');
+        const editButton = card.querySelector('.card-delete-button');
 
         // 그래프 생성
         const graphTemplate = document.querySelector('.graph-template').content.cloneNode(true);
-        const graphWrapper = graphTemplate.querySelector('.graph-wrapper');
-        const graphValue = graphWrapper.querySelector('.graph-value');
-        const graphBar = graphWrapper.querySelector('.graph');
-        const graphId = graphWrapper.querySelector('.graph-id');
+        const graph = graphTemplate.querySelector('.graph-wrapper');
+        const graphValue = graph.querySelector('.graph-value');
+        const graphBar = graph.querySelector('.graph');
+        const graphId = graph.querySelector('.graph-id');
         graphId.textContent = this.id;
 
         // 삭제 시 이벤트 설정
-        deleteButton.addEventListener("click", () => this.delete(card, graphWrapper));
+        deleteButton.addEventListener("click", () => {
+            card.classList.add("fade-out");
+            graph.classList.add("fade-out");
+            card.addEventListener('animationend', () => this.delete(card, graph));
+        });
 
         // 생성한 카드, 그래프를 UI에 추가
         valueTable.appendChild(card);
-        graphTable.appendChild(graphWrapper);
+        graphTable.appendChild(graph);
         animateGraph(graphBar, this.value, graphValue);
     }
 
@@ -50,11 +60,13 @@ class Data {
         card.remove();
         graph.remove();
         updateEditTextarea();
+        updateSection();
     }
 }
 
 // 이벤트 리스너 등록
 const init = () => {
+    updateSection();
     addValueButton.addEventListener('click', clickAddValueHandler);
     applyEditButton.addEventListener('click', clickApplyEditHandler);
 };
@@ -69,7 +81,7 @@ const clickAddValueHandler = () => {
     if (!id || !value) return;
 
     const newData = new Data(id, value);
-    applyNewData(newData);
+    updateUI(newData);
 
     document.querySelector('#id-input').value = "";
     document.querySelector('#value-input').value = "";
@@ -103,7 +115,7 @@ const clickApplyEditHandler = () => {
             return;
         }
         const newData = new Data(id.trim(), value);
-        applyNewData(newData);
+        updateUI(newData);
     });
 };
 
@@ -121,7 +133,7 @@ const getValidateInput = (id, value) => {
     return [id, value];
 };
 
-const applyNewData = (data) => {
+const updateUI = (data) => {
     data.createUI();
     wholeData[data.key] = data;
     updateEditTextarea();
@@ -132,8 +144,8 @@ const updateEditTextarea = () => {
         id: user.id,
         value: Number(user.value),
     }));
-
     editTextarea.value = dataList.length === 0 ? '' : JSON.stringify(dataList, null, 2);
+    updateSection();
 };
 
 // 그래프 애니메이션 실행 함수
@@ -148,13 +160,30 @@ const animateGraph = (graph, targetValue, currentValue) => {
 
         currentValue.textContent = Math.floor(height);
         currentValue.style.setProperty('--graph-value-color', interactiveColor);
+
         graph.style.setProperty('--graph-height', `${height / 100 * graphBackgroundHeight}rem`);
         graph.style.setProperty('--graph-color', interactiveColor);
 
-        if (progress < 1) requestAnimationFrame(animate);
+        if (progress < 1) 
+            requestAnimationFrame(animate);
     };
 
     requestAnimationFrame(animate);
 };
+
+const updateSection = () => {
+    if (Object.keys(wholeData).length == 0) {
+        addSectionText.textContent = "아직 데이터가 없네요. 새로운 데이터를 추가해보세요!"
+        graphSection.style.display = 'none';
+        editSection.style.display = 'none';
+        editAdvanceSection.style.display = 'none';
+
+    } else {
+        addSectionText.textContent = "새로운 값을 추가하면 그래프가 달라져요!"
+        graphSection.style.display = '';
+        editSection.style.display = '';
+        editAdvanceSection.style.display = '';
+    }
+}
 
 init();
