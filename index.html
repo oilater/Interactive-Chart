@@ -46,24 +46,31 @@
         <p class="section-title">값 고급 편집</p>
         <p class="section-description">JSON을 이용해 많은 양의 데이터를 손쉽게 변경할 수 있어요.</p>
         <div>
-            <textarea class="advanced-value-textarea"></textarea>
+            <textarea class="advanced-value-textarea" placeholder='아래의 구조를 참고해주세요.
+
+[
+    {
+        "id": "123",
+        "value": 123
+    }
+]'></textarea>
         </div>
         <div>
             <button class="apply-advanced-value-button">Add</button>
         </div>
     </section>
 
-    <!-- 값 목록 템플릿 -->
-    <template id="card-template">
-        <div class="user-data">
-        <p class="user-id"></p>
-        <p class="user-value"></p>
-        <button class="delete-button">삭제</button>
+    <!-- 카드 템플릿 -->
+    <template class="card-template">
+        <div class="card-wrapper">
+            <p class="card-id"></p>
+            <p class="card-value"></p>
+            <button class="delete-button">삭제</button>
         </div>
     </template>
     
     <!-- 그래프 템플릿 -->
-    <template id="graph-template">
+    <template class="graph-template">
         <div class="graph-wrapper">
         <div class="graph-id"><p class="graph-id"></p></div>
         <div class="graph-background">

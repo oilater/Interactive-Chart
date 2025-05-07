@@ -42,13 +42,12 @@ header .applicant-name {
     margin-right: 3rem;
 }
 
-/* 그래프 */
-.graph-section .graph-div {
+/* 그래프 
+.graph-section .graph-table-wrapper {
     width: 100%;
     height: 30vw;
     display: flex;
-    background-color: antiquewhite;
-}
+} */
 
 /* 동적 그래프 컨테이너 */
 .graph-section .graph-table {
@@ -106,7 +105,7 @@ header .applicant-name {
 }
 
 /* 값 편집 */
-.user-data {
+.card-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
