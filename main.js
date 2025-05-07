@@ -1,12 +1,12 @@
+const graphBackgroundHeight = 20;
+const graphAnimationDuration = 600;
+
 const valueTable = document.querySelector(".value-table");
 const graphTable = document.querySelector(".graph-table");
 const advancedEditTextarea = document.querySelector(".advanced-value-textarea");
 
 const addValueButton = document.querySelector(".add-value-button");
 const applyEditButton = document.querySelector(".apply-advanced-value-button");
-
-const graphBackgroundHeight = 20;
-const graphAnimationDuration = 600;
 
 addValueButton.addEventListener('click', clickAddValueHandler);
 applyEditButton.addEventListener('click', clickApplyEditHandler);
