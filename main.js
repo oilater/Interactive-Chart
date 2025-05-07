@@ -1,9 +1,10 @@
+// 상수 선언 및 HTML 요소 설정
 const graphBackgroundHeight = 20;
 const graphAnimationDuration = 600;
 
 const valueTable = document.querySelector(".value-table");
 const graphTable = document.querySelector(".graph-table");
-const advancedEditTextarea = document.querySelector(".advanced-value-textarea");
+const editTextarea = document.querySelector(".advanced-value-textarea");
 
 const addValueButton = document.querySelector(".add-value-button");
 const applyEditButton = document.querySelector(".apply-advanced-value-button");
@@ -76,10 +77,10 @@ const clickAddValueHandler = () => {
 
 // 값 고급 편집 클릭 시 실행
 const clickApplyEditHandler = () => {
-    // 유효성 검사
+    // JSON 파싱
     let parsedData;
     try {
-        parsedData = JSON.parse(advancedEditTextarea.value);
+        parsedData = JSON.parse(editTextarea.value);
     } catch {
         alert("JSON 형식이 올바른지 확인하세요!");
         return;
@@ -90,10 +91,12 @@ const clickApplyEditHandler = () => {
         return;
     }
 
+    // 데이터 및 UI 초기화
     wholeData = {};
-    valueTable.innerHTML = '';
+    valueTable.replaceChildren();
+    graphTable.replaceChildren();
 
-    // 새로운 데이터 적용
+    // 파싱 된 데이터로 대체
     parsedData.forEach(({ id, value }) => {
         if (!id.trim()) {
             alert("빈 아이디 값이 있는지 확인하세요!");
@@ -129,7 +132,8 @@ const updateEditTextarea = () => {
         id: user.id,
         value: Number(user.value),
     }));
-    advancedEditTextarea.value = dataList.length === 0 ? '' : JSON.stringify(dataList, null, 2);
+
+    editTextarea.value = dataList.length === 0 ? '' : JSON.stringify(dataList, null, 2);
 };
 
 // 그래프 애니메이션 실행 함수
