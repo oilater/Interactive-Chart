@@ -4,6 +4,7 @@ const GRAPH_ANIMATION_DURATION = 600;
 const COLOR_HIGH_VALUE = '#1873cc';
 const COLOR_MEDIUM_VALUE = 'dodgerblue';
 const COLOR_LOW_VALUE = '#1e90ff80';
+const ACTIVE_TRIGGER = 'active-button';
 
 // 효율적인 렌더링을 위한 상태 분기
 const RenderStatus = Object.freeze({
@@ -16,13 +17,15 @@ const RenderStatus = Object.freeze({
 // DOM Elements
 const graphSection = document.querySelector(".graph-section");
 const editSection = document.querySelector(".edit-value-section");
+const addSection = document.querySelector(".add-value-section");
 const editAdvanceSection = document.querySelector(".edit-advanced-value-section");
-const addSectionText = document.querySelector(".add-value-description");
 const cardTable = document.querySelector(".value-card-table");
 const graphTable = document.querySelector(".graph-table");
 const editTextarea = document.querySelector(".advanced-value-textarea");
 const addValueButton = document.querySelector(".add-value-button");
 const applyEditButton = document.querySelector(".apply-advanced-value-button");
+const idInput = document.querySelector("#id-input");
+const valueInput = document.querySelector("#value-input");
 
 // Data를 관리할 객체
 let wholeData = {};
@@ -52,14 +55,14 @@ const renderUI = (status = RenderStatus.ALL, data = null) => {
             cardTable.replaceChildren();
             
             Object.values(wholeData).forEach((data) => {
-                renderCard(data);
                 renderGraph(data);
+                renderCard(data);
             });
             break;
 
         case RenderStatus.ADD:
-            renderCard(data);
             renderGraph(data);
+            renderCard(data);
             break;
 
         case RenderStatus.EDIT:
@@ -76,6 +79,7 @@ const renderUI = (status = RenderStatus.ALL, data = null) => {
     }
     updateEditTextarea();
     updateSectionVisibility();
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // 스크롤 맨 위로 이동
 };
 
 // [그래프] UI 렌더링
@@ -93,13 +97,6 @@ const renderGraph = (data) => {
     animateGraph(data.value, barElement, valueText);
     graphTable.appendChild(wrapper);
 };
-
-// [값 편집] 시 그래프 업데이트
-const updateGraph = (data, graph) => {
-    const graphBar = graph.querySelector('.graph');
-    const graphValue = graph.querySelector('.graph-value');
-    animateGraph(data.value, graphBar, graphValue);
-}
 
 // [그래프] 애니메이션
 const animateGraph = (targetValue, barElement, valueText) => {
@@ -127,6 +124,14 @@ const animateGraph = (targetValue, barElement, valueText) => {
 
     requestAnimationFrame(animate);
 };
+
+// [값 편집] 시 그래프 업데이트
+const updateGraph = (data, graph) => {
+    const graphBar = graph.querySelector('.graph');
+    const graphValue = graph.querySelector('.graph-value');
+    animateGraph(data.value, graphBar, graphValue);
+}
+
 // [값 편집] 카드 UI 렌더링
 const renderCard = (data) => {
     // 템플릿을 복사해 카드 생성
@@ -236,63 +241,86 @@ const updateEditTextarea = () => {
 // Data 개수에 따른 각 Section 표시 여부 결정
 const updateSectionVisibility = () => {
     const hasData = Object.keys(wholeData).length > 0;
-    addSectionText.textContent = hasData
-        ? "새로운 값을 추가하면 그래프가 달라져요!"
-        : "아직 데이터가 없네요. 새로운 데이터를 추가해보세요!";
+    let description;
+    let sectionVisibility;
 
-    const property = hasData ? '' : 'none'; 
+    if (hasData) {
+        addSection.classList.remove('no-value');
+        description = "새로운 값을 추가하면 그래프가 달라져요!"
+        sectionVisibility = '';
+    } else {
+        addSection.classList.add('no-value');
+        description = "아직 데이터가 없네요. 새로운 데이터를 추가해보세요!";
+        sectionVisibility = 'none';
+    }
     
-    graphSection.style.display = property;
-    editSection.style.display = property;
-    editAdvanceSection.style.display = property;
+    document.querySelector(".add-value-description").textContent = description;
+    graphSection.style.display = sectionVisibility;
+    editSection.style.display = sectionVisibility;
+    editAdvanceSection.style.display = sectionVisibility;
 };
 
-// [값 추가] Add 버튼 클릭 시
-addValueButton.addEventListener('click', () => {
-    const idInput = document.querySelector('#id-input').value.trim();
-    const valInput = document.querySelector('#value-input').value.trim();
+const setEventListeners = () => {
+    // 값 입력(id, value) 여부에 따른 Add 버튼 색상 변경
+    const updateButtonColor = () => {
+        const id = idInput.value;
+        const value = valueInput.value;
 
-    if (!idInput) {
-        alert("아이디를 입력해주세요!");
-        return;
-    } 
-    if (!valInput || isNaN(valInput)) {
-        alert("숫자 값만 입력해주세요!");
-        return;
+        if (id.trim() && value.trim() && !isNaN(value.trim())) {
+            addValueButton.classList.add(ACTIVE_TRIGGER);
+        } else {
+            addValueButton.classList.remove(ACTIVE_TRIGGER);
+        }
     }
+    idInput.addEventListener('input', updateButtonColor);
+    valueInput.addEventListener('input', updateButtonColor);
 
-    const newData = new Data(idInput, valInput);
-    wholeData[newData.key] = newData;
-    
-    renderUI(RenderStatus.ADD, newData);
-    
-    document.querySelector('#id-input').value = '';
-    document.querySelector('#value-input').value = '';
-});
+    // [값 추가] Add 버튼 클릭 시
+    addValueButton.addEventListener('click', () => {
+        const id = idInput.value;
+        const value = valueInput.value;
 
-// [값 고급 편집] Apply 버튼 클릭 시
-applyEditButton.addEventListener('click', () => {
-    try {
-        const parsed = JSON.parse(editTextarea.value);
-        
-        if (!Array.isArray(parsed)) {
-            throw new Error();
+        if (!id.trim()) {
+            alert("아이디를 입력해주세요!");
+            return;
+        } 
+        if (!value.trim() || isNaN(value)) {
+            alert("숫자 값만 입력해주세요!");
+            return;
         }
 
-        wholeData = {};
+        const newData = new Data(id, value);
+        wholeData[newData.key] = newData;
+        renderUI(RenderStatus.ADD, newData);
+        idInput.value = '';
+        valueInput.value = '';
+    });
 
-        parsed.forEach(({ id, value }) => {
-            if (!id.trim()) {
-                throw new Error("비어있는 아이디가 있습니다");
+    // [값 고급 편집] Apply 버튼 클릭 시
+    applyEditButton.addEventListener('click', () => {
+        try {
+            const parsed = JSON.parse(editTextarea.value);
+            
+            if (!Array.isArray(parsed)) {
+                throw new Error();
             }
-            const data = new Data(id.trim(), value);
-            wholeData[data.key] = data;
-        });
-        renderUI(RenderStatus.ALL);
-    } catch (error) {
-        alert("JSON 형식이 올바른지 확인하세요!");
-    }
-});
+
+            wholeData = {};
+
+            parsed.forEach(({ id, value }) => {
+                if (!id.trim()) {
+                    throw new Error("비어있는 아이디가 있습니다");
+                }
+                const data = new Data(id.trim(), value);
+                wholeData[data.key] = data;
+            });
+            renderUI(RenderStatus.ALL);
+        } catch (error) {
+            alert("JSON 형식이 올바른지 확인하세요!");
+        }
+    });
+}
 
 // 초기 렌더링 실행
+setEventListeners();
 renderUI(RenderStatus.ALL);

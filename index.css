@@ -35,6 +35,12 @@
     }
 }
 
+/* fade-out 애니메이션 설정 */
+.card-wrapper.fade-out,
+.graph-wrapper.fade-out {
+    animation: fadeOut 0.3s forwards ease-in-out;
+}
+
 /* 기본 CSS 초기화 */
 * {
     margin: 0;
@@ -48,7 +54,7 @@ body section {
     max-width: 50vw;
     min-height: 20vh;
     margin: 0 auto;
-    margin-top: 3rem;
+    margin-top: 1rem;
     margin-bottom: 5rem;
     animation: slideDown 0.8s ease-out;
 }
@@ -80,12 +86,7 @@ header .applicant-name {
     margin-right: 3rem;
 }
 
-/* 그래프 
-.graph-section .graph-table-wrapper {
-    width: 100%;
-    height: 30vw;
-    display: flex;
-} */
+/* [그래프] */
 
 /* 동적 그래프 컨테이너 */
 .graph-section .graph-table {
@@ -143,14 +144,15 @@ header .applicant-name {
     font-weight: 600;
 }
 
-/* 값 편집 */
+/* [값 편집] */
+/* 카드 테이블 */
 .value-card-table {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
 }
 
-/* 값 카드 */
+/* 각 카드 Wrapper */
 .card-wrapper {
     position: relative;
     width: 8rem;
@@ -169,15 +171,12 @@ header .applicant-name {
     transition: background-color 0.4s ease-in-out;
 }
 
-.card-wrapper.fade-out,
-.graph-wrapper.fade-out {
-    animation: fadeOut 0.3s forwards ease-in-out;
-}
-
+/* 카드 hover */
 .card-wrapper:hover:not(.editing) {
     background-color: #393939c7;
 }
 
+/* 카드 버튼 */
 .card-wrapper .card-button {
     border: none;
     background-color: inherit;
@@ -194,6 +193,7 @@ header .applicant-name {
     margin-top: 0.5rem;
 }
 
+/* 카드 편집 모드 */
 .card-wrapper.editing .card-edit-actions {
     position: absolute;
     display: flex;
@@ -214,21 +214,16 @@ header .applicant-name {
     justify-content: center;
 }
 
+/* 카드 id */
 .card-wrapper .card-id {
     font-size: 1.1rem;
 }
 
+/* 카드 value */
 .card-wrapper .card-value {
     font-size: 1.6rem;
     font-weight: 600;
     color: dodgerblue;
-}
-
-.card-wrapper .edit-card-value-input {
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: dodgerblue;
-    all: unset;
 }
 
 /* 값 고급 편집 */
@@ -241,4 +236,56 @@ header .applicant-name {
     border-radius: 4px;
     resize: none;
     box-sizing: border-box;
+}
+
+/* [값 추가] */
+/* 진입화면 또는 데이터가 없을 때 */
+.no-value {
+    margin-top: 8rem;
+}
+
+.add-value-section input {
+    all: unset;
+    margin-right: 1rem;
+    padding-left: 1rem;
+    width: 15rem;
+    height: 3.5rem;
+    font-size: 1.1rem;
+    line-height: 4rem;
+    border-bottom: 0.08rem solid #5c5c5c66;
+    transition: border-bottom-color 0.3s ease-in;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.add-value-section input::placeholder {
+    color: #80808066;
+    opacity: 1;
+}
+
+.add-value-section input:focus {
+    border-bottom: 0.1rem solid dodgerblue;
+}
+
+.add-value-section button {
+    all: unset;
+    background-color: #cfcfcf66;
+    border-radius: 20rem;
+    color: white;
+    text-align: center;
+    margin-left: 1rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in;
+}
+
+.add-value-section .active-button {
+    background-color: dodgerblue;
+    color: white;
+}
+
+.add-value-section button:hover {
+    background-color: #1873cc;
 }
