@@ -100,9 +100,14 @@ header .applicant-name {
 /* 각 그래프 Wrapper */
 .graph-wrapper {
     display: flex;
+    position: relative;
     flex-direction: column-reverse;
     align-items: center;
     animation: fadeIn 1s ease-out;
+}
+
+.graph-table .graph-wrapper:last-child::after:hover {
+    background-color: dodgerblue;
 }
 
 /* 각 그래프 회색 배경 */
@@ -227,9 +232,27 @@ header .applicant-name {
 }
 
 /* 값 고급 편집 */
+.edit-advanced-table {
+    display: flex;
+}
+
+.edit-advanced-table .apply-advanced-value-button,
+.add-value-section button {
+    all: unset;
+    background-color: #cfcfcf66;
+    border-radius: 20rem;
+    color: white;
+    text-align: center;
+    margin-left: 2rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in;
+}
+
 .edit-advanced-value-section .advanced-value-textarea {
-    width: 100%;
-    height: 30rem;
+    width: 43rem;
+    height: 20rem;
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
@@ -238,10 +261,14 @@ header .applicant-name {
     box-sizing: border-box;
 }
 
+.edit-advanced-value-section .advanced-value-textarea::placeholder {
+    color: #80808083;
+}
+
 /* [값 추가] */
 /* 진입화면 또는 데이터가 없을 때 */
 .no-value {
-    margin-top: 8rem;
+    margin-top: 4rem;
 }
 
 .add-value-section input {
@@ -268,20 +295,8 @@ header .applicant-name {
     border-bottom: 0.1rem solid dodgerblue;
 }
 
-.add-value-section button {
-    all: unset;
-    background-color: #cfcfcf66;
-    border-radius: 20rem;
-    color: white;
-    text-align: center;
-    margin-left: 1rem;
-    width: 3.5rem;
-    height: 3.5rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in;
-}
-
-.add-value-section .active-button {
+.add-value-section .active-button,
+.edit-advanced-value-section .active-button {
     background-color: dodgerblue;
     color: white;
 }
