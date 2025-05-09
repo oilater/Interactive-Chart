@@ -39,7 +39,7 @@ class Data {
         this.value = Number(value);
         this.key = crypto.randomUUID();
     }
-    
+
     toJSON() {
         return { id: this.id, value: this.value };
     }
@@ -149,7 +149,7 @@ const initCard = (data, card) => {
 
     card.dataset.id = data.key; // 값 편집 및 삭제 시 카드를 참조하기 위한 data-id 적용
     cardId.textContent = data.id;
-    cardValue.textContent = data.value;
+    cardValue.value = data.value;
     const color = getColor(data.value); // value에 따라 색상을 지정
     cardValue.style.color = color;
     card.style.borderColor = color;
@@ -172,21 +172,13 @@ const onDeleteData = (e, data, card) => {
 // 카드의 수정 버튼 클릭 시
 const onEditData = (e, data, card) => {
     e.preventDefault();
-    // value element는 편집 모드에서는 input 태그, 그 외에는 p 태그로 변함
-    let valueElement = card.querySelector('.card-value');
-
+    const cardValue = card.querySelector('.card-value');
+    
     // 편집 모드 진입
     const enterEditMode = () => {
         card.classList.add('editing');
-        // p 태그를 input 태그로 교체
-        const inputElement = document.createElement('input');
-        inputElement.classList.add('card-value');
-        inputElement.value = valueElement.textContent;
-        inputElement.setAttribute('maxlength', `${MAX_VALUE_LENGTH}`);
-        // valueElement의 참조 변경
-        valueElement.replaceWith(inputElement);
-        valueElement = inputElement;
-        valueElement.focus();
+        cardValue.removeAttribute('readonly');
+        cardValue.focus();
 
         // 버튼 클릭 시 이벤트 처리
         cancelButton.addEventListener('click', onCancelEdit);
@@ -196,15 +188,7 @@ const onEditData = (e, data, card) => {
     // 편집 모드 종료
     const exitEditMode = () => {
         card.classList.remove('editing');
-        
-        // 편집이 종료되면 input을 다시 p 태그로 변경
-        const pElement = document.createElement('p');
-        pElement.classList.add('card-value');
-        pElement.textContent = valueElement.value;
-        // valueElement의 참조 변경
-        valueElement.replaceWith(pElement);
-        valueElement = pElement;
-
+        cardValue.setAttribute('readonly', true);
         // 이벤트 리스너 해제
         cancelButton.removeEventListener('click', onCancelEdit);
         confirmButton.removeEventListener('click', onConfirmEdit);
@@ -213,7 +197,7 @@ const onEditData = (e, data, card) => {
     // 편집 모드에서 확인 버튼을 누를 때
     const onConfirmEdit = (e) => {
         e.preventDefault();
-        const newValue = Number(valueElement.value);
+        const newValue = Number(cardValue.value);
 
         if (!isNaN(newValue)) {
             data.value = newValue;
@@ -227,7 +211,7 @@ const onEditData = (e, data, card) => {
     // 편집 모드에서 취소 버튼을 누를 때
     const onCancelEdit = (e) => {
         e.preventDefault();
-        valueElement.value = data.value; // 원래 값으로 되돌림
+        cardValue.value = data.value; // 원래 값으로 되돌림
         exitEditMode();
     };
 
@@ -271,7 +255,7 @@ const updateSectionVisibility = () => {
         sectionVisibility = '';
     } else {
         addSection.classList.add('no-value');
-        addDescription = "아직 데이터가 없네요. 새로운 데이터를 추가해보세요!";
+        addDescription = "아직 데이터가 없네요. 새로운 값을 추가해보세요!";
         advancedEditTitle = "JSON으로 값 추가하기";
         sectionVisibility = 'none';
         idInput.focus();
@@ -323,7 +307,7 @@ const setEventListeners = () => {
         } else if (!value) {
             feedback = '* 값을 입력해주세요.';
         } else if (!isValueValidNumber) {
-            feedback = '* 값은 숫자로 입력해주세요.';
+            feedback = '* 값은 숫자만 입력할 수 있어요.';
         } else {
             feedback = '';
             addValueButton.classList.add(ACTIVE_COLOR);
@@ -356,7 +340,7 @@ const setEventListeners = () => {
         clearFields();
     };
 
-    const onApplyAdvancedValue = () => {
+    const onApplyAdvancedValue = (e) => {
         e.preventDefault();
         try {
             // JSON 파싱
