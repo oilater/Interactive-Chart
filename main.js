@@ -1,10 +1,11 @@
 // 상수 선언
+const MAX_VALUE_LENGTH = 7;
 const GRAPH_BG_HEIGHT = 20;
 const GRAPH_ANIMATION_DURATION = 600;
 const COLOR_HIGH_VALUE = '#1873cc';
 const COLOR_MEDIUM_VALUE = 'dodgerblue';
 const COLOR_LOW_VALUE = '#1e90ff80';
-const ACTIVE_TRIGGER_NAME = 'active-button';
+const ACTIVE_COLOR = 'active-button';
 
 // 효율적인 렌더링을 위한 상태 분기
 const RenderStatus = Object.freeze({
@@ -24,6 +25,8 @@ const graphTable = document.querySelector(".graph-table");
 const editTextarea = document.querySelector(".advanced-value-textarea");
 const addValueButton = document.querySelector(".add-value-button");
 const applyEditButton = document.querySelector(".apply-advanced-value-button");
+const inputFeedBackText = document.querySelector(".feedback-text");
+const jsonFeedbackText = document.querySelector(".json-feedback-text");
 const idInput = document.querySelector("#id-input");
 const valueInput = document.querySelector("#value-input");
 
@@ -73,12 +76,13 @@ const renderUI = (status = RenderStatus.ALL, data = null) => {
         
         case RenderStatus.DELETE:
             if (!selectedGraph || !selectedCard) return;
-            selectedGraph.remove();
+            selectedGraph.remove()
             selectedCard.remove();
             break;
     }
     updateEditTextarea();
     updateSectionVisibility();
+    displayGraphButton();
     window.scrollTo({ top: 0, behavior: 'smooth' }); // 스크롤 맨 위로 이동
 };
 
@@ -144,9 +148,9 @@ const renderCard = (data) => {
     cardValue.style.color = color;
     card.style.borderColor = color;
 
-    editButton.addEventListener("click", () => handleEditCard(card, data, cardValue));
+    editButton.addEventListener("click", () => handleEditCard(card, data));
     deleteButton.addEventListener("click", () => {
-        clearValues();
+        clearFields();
         card.classList.add("fade-out");
         // fadeOut 애니메이션 종료 후 카드를 삭제
         card.addEventListener("animationend", () => {
@@ -162,57 +166,75 @@ const renderCard = (data) => {
 const updateCard = (data, card) => {
     const cardValue = card.querySelector('.card-value');
     cardValue.textContent = data.value;
-
     const color = getColor(data.value);
     cardValue.style.color = color;
     card.style.borderColor = color;
 };
 
 // 카드의 수정 버튼 클릭 시
-const handleEditCard = (card, data, currentValue) => {
+const handleEditCard = (card, data) => {
+    // 카드의 value는 편집 모드에서는 p 태그에서 input으로 변함
+    let valueElement = card.querySelector('.card-value');
+
     // 편집 모드 진입
     const enterEditMode = () => {
         card.classList.add('editing');
-        currentValue.setAttribute('contenteditable', 'true'); // p 태그 안 텍스트를 수정할 수 있도록 해줌
-        currentValue.focus();
-    }
+        // p 태그를 input 태그로 교체
+        const inputElement = document.createElement('input');
+        inputElement.classList.add('card-value');
+        inputElement.value = valueElement.textContent;
+        inputElement.setAttribute('maxlength', `${MAX_VALUE_LENGTH}`);
+        valueElement.replaceWith(inputElement);
+        valueElement = inputElement;
+        valueElement.focus();
+
+        // 버튼 클릭 시 이벤트 처리
+        cancelButton.addEventListener('click', onCancelEdit);
+        confirmButton.addEventListener('click', onConfirmEdit);
+    };
 
     // 편집 모드 종료
     const exitEditMode = () => {
         card.classList.remove('editing');
-        currentValue.setAttribute('contenteditable', 'false');
+        
+        // 편집이 종료되면 input을 다시 p 태그로 변경
+        const pElement = document.createElement('p');
+        pElement.classList.add('card-value');
+        pElement.textContent = valueElement.value;
+        valueElement.replaceWith(pElement);
+        valueElement = pElement;
 
+        // 이벤트 리스너 해제
         cancelButton.removeEventListener('click', onCancelEdit);
         confirmButton.removeEventListener('click', onConfirmEdit);
     };
 
     // 편집 모드에서 확인 버튼을 누를 때
-    const onConfirmEdit = () => {
-        const newValue = Number(currentValue.textContent);
+    const onConfirmEdit = (e) => {
+        e.preventDefault();
+        const newValue = Number(valueElement.value);
 
         if (!isNaN(newValue)) {
             data.value = newValue;
             renderUI(RenderStatus.EDIT, data);
+            exitEditMode();
         } else {
             alert("숫자 값만 입력해주세요!");
-            return;
         }
-        exitEditMode();
     };
 
-    // 편집 모드에서 취소 버튼을 누를 떄
-    const onCancelEdit = () => {
-        currentValue.textContent = data.value; 
+    // 편집 모드에서 취소 버튼을 누를 때
+    const onCancelEdit = (e) => {
+        e.preventDefault();
+        valueElement.value = data.value; // 원래 값으로 되돌림
         exitEditMode();
     };
 
     // 편집 적용 여부를 결정하는 '취소', '확인' 버튼
     const cancelButton = card.querySelector('.edit-cancel-button');
     const confirmButton = card.querySelector('.edit-confirm-button');
-    confirmButton.addEventListener('click', onConfirmEdit);
-    cancelButton.addEventListener('click', onCancelEdit);
 
-    enterEditMode();
+    enterEditMode(); // 편집 모드 진입
 };
 
 // 값에 따라 색상을 결정
@@ -252,85 +274,127 @@ const updateSectionVisibility = () => {
     editSection.style.display = sectionVisibility;
 };
 
-// 버튼 색 초기화
-const clearValues = () => {
+// 초기화
+const clearFields = () => {
     idInput.value = '';
     valueInput.value = '';
-    addValueButton.classList.remove(ACTIVE_TRIGGER_NAME);
-    applyEditButton.classList.remove(ACTIVE_TRIGGER_NAME);
+    inputFeedBackText.textContent = '';
+    jsonFeedbackText.textContent = '';
+    addValueButton.classList.remove(ACTIVE_COLOR);
+    applyEditButton.classList.remove(ACTIVE_COLOR);
 }
 
 const setEventListeners = () => {
     // 입력 여부에 따라 Add 버튼 색 변경
-    const handleAddButtonColor = () => {
-        const id = idInput.value;
-        const value = valueInput.value;
-
-        if (id.trim() && value.trim() && !isNaN(value.trim())) {
-            addValueButton.classList.add(ACTIVE_TRIGGER_NAME);
+    const handleAddButtonColor = (e) => {
+        e.preventDefault();
+        const id = idInput.value.trim();
+        const value = valueInput.value.trim();
+        let feedback = '';
+        addValueButton.classList.remove(ACTIVE_COLOR);
+        
+        const isValueValidNumber = !isNaN(value);
+        if (!id && !value) {
+            feedback = '* 아이디와 값을 입력해주세요.';
+        } else if (!id) {
+            feedback = '* 아이디를 입력해주세요.';
+        } else if (!value) {
+            feedback = '* 값을 입력해주세요.';
+        } else if (!isValueValidNumber) {
+            feedback = '* 값은 숫자로 입력해주세요.';
         } else {
-            addValueButton.classList.remove(ACTIVE_TRIGGER_NAME);
+            feedback = '';
+            addValueButton.classList.add(ACTIVE_COLOR);
         }
+        inputFeedBackText.textContent = feedback;
     };
 
     // 입력 여부에 따라 Apply 버튼 색 변경
-    const handleApplyButtonColor = () => {
+    const handleApplyButtonColor = (e) => {
+        e.preventDefault();
         const text = editTextarea.value;
 
         if (text.trim()) {
-            applyEditButton.classList.add(ACTIVE_TRIGGER_NAME);
+            applyEditButton.classList.add(ACTIVE_COLOR);
         } else {
-            applyEditButton.classList.remove(ACTIVE_TRIGGER_NAME);
+            applyEditButton.classList.remove(ACTIVE_COLOR);
         }
     };
 
+    // input 값 검사
+    const isInputValidate = (id, value) => {
+        if (!id || !id.trim()) {
+            return false;
+        } else if (!value.trim() || isNaN(value)) {
+            return false;
+        }
+        return true;
+    }
+
+    // input 이벤트 설정
     idInput.addEventListener('input', handleAddButtonColor);
     valueInput.addEventListener('input', handleAddButtonColor);
     editTextarea.addEventListener('input', handleApplyButtonColor);
 
     // 값 입력 후 Add 버튼 클릭 시
-    addValueButton.addEventListener('click', () => {
+    addValueButton.addEventListener('click', (e) => {
+        e.preventDefault();
         const id = idInput.value;
         const value = valueInput.value;
-
-        if (!id.trim()) {
-            return alert("아이디를 입력해주세요!");
-        } 
-        if (!value.trim() || isNaN(value)) {
-            return alert("숫자 값만 입력해주세요!");
-        }
-
+        if (!isInputValidate(id, value)) return;
+        
         const newData = new Data(id, value);
         wholeData[newData.key] = newData;
-        renderUI(RenderStatus.ADD, newData);
         
-        idInput.value = '';
-        valueInput.value = '';
-        clearValues();
+        renderUI(RenderStatus.ADD, newData);
+        clearFields();
     });
 
     // JSON 편집 후 Apply 버튼 클릭 시
-    applyEditButton.addEventListener('click', () => {
+    applyEditButton.addEventListener('click', (e) => {
+        e.preventDefault();
         try {
+            // JSON 파싱
             const parsed = JSON.parse(editTextarea.value);
-            if (!Array.isArray(parsed)) return;
-
+            
+            // 유효성 검사
+            if (!Array.isArray(parsed) || parsed.length == 0) {
+                jsonFeedbackText.textContent = "* 올바른 형식의 JSON을 입력해주세요.";
+                return;
+            }
+            // 전체 데이터 비우기
             wholeData = {};
 
-            parsed.forEach(({ id, value }) => {
-                if (!id.trim()) return;
-
+            // 데이터 생성
+            for (const { id, value } of parsed) {
+                if (!id.trim()) {
+                    jsonFeedbackText.textContent = "* 아이디에 빈 값이 있습니다."
+                    return;
+                }
                 const data = new Data(id.trim(), value);
                 wholeData[data.key] = data;
-            });
+            };
 
-            clearValues();
             renderUI(RenderStatus.ALL);
+            clearFields();
         } catch (error) {
-            alert("JSON 형식이 올바른지 확인하세요!");
+            jsonFeedbackText.textContent = "* 올바른 형식의 JSON을 입력해주세요."
         }
     });
 };
+
+// 가장 끝에 있는 그래프의 오른쪽에 + 버튼을 추가
+const displayGraphButton = () => {
+    const graphs = document.querySelectorAll('.graph-wrapper');
+    if (graphs.length === 0) return;
+    const lastButton = graphs[graphs.length - 1].querySelector('.graph-add-button');
+    if (!lastButton) return;
+    
+    lastButton.addEventListener('click', () => {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+        idInput.focus({preventScroll: true});
+    });
+}
 
 setEventListeners();
 // 초기 렌더링
