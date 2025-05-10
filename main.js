@@ -12,7 +12,7 @@ const RenderStatus = Object.freeze({
     ALL: Symbol('ALL'),
     ADD: Symbol('ADD'),
     DELETE: Symbol('DELETE'),
-    APPLY_EDIT: Symbol('EDIT'),
+    APPLY_EDIT: Symbol('APPLY_EDIT'),
   });
 
 // DOM 엘리먼트
@@ -103,14 +103,16 @@ const renderGraph = (data) => {
 };
 
 const initGraph = (data, graph) => {
-    const graphId = graph.querySelector('.graph-id');
-    const graphValue = graph.querySelector('.graph-value');
+    const idElement = graph.querySelector('.graph-id');
+    const valueElement = graph.querySelector('.graph-value');
     const barElement = graph.querySelector('.graph');
+    
     graph.dataset.id = data.key; // 편집 및 삭제 시 참조하기 위한 data-id 적용
-    graphId.textContent = data.id;
-    animateGraph(data.value, barElement, graphValue);
+    idElement.textContent = data.id;
+    animateGraph(data.value, barElement, valueElement);
 }
 
+// 그래프 애니메이션 실행
 const animateGraph = (targetValue, barElement, valueText) => {
     const color = getColor(targetValue);
     const startTime = performance.now();
@@ -149,58 +151,26 @@ const renderCard = (data) => {
 
 // 생성한 카드 초기화
 const initCard = (data, card) => {
-    const cardId = card.querySelector('.card-id');
-    const cardValue = card.querySelector('.card-value');
+    const idElement = card.querySelector('.card-id');
+    const valueElement = card.querySelector('.card-value');
     const deleteButton = card.querySelector('.card-delete-button');
-
-    card.dataset.id = data.key; // 값 편집 및 삭제 시 카드를 참조하기 위한 data-id 적용
-    cardId.textContent = data.id;
-    cardValue.value = data.value;
     const color = getColor(data.value); // value에 따라 색상을 지정
-    cardValue.style.color = color;
+    
+    card.dataset.id = data.key; // 값 편집 및 삭제 시 카드를 참조하기 위한 data-id 적용
+    idElement.textContent = data.id;
+    valueElement.value = data.value;
+    valueElement.style.color = color;
     card.style.borderColor = color;
-    deleteButton.addEventListener('click', (e) => onDeleteData(e, data, card));
+    valueElement.addEventListener('click', onEditting);
+    deleteButton.addEventListener('click', (e) => onDelete(e, data, card));
 }
 
-const onApplyEdit = (e) => {
+const onEditting = (e) => {
     e.preventDefault();
-    const edittedDataDict = {};
-
-    // 카드 테이블에 생성된 카드들을 가져옴
-    const cards = cardTable.querySelectorAll('.card-wrapper');
-    
-    if (!cards) return;
-    
-    // 모든 카드들의 데이터를 추출
-    const extractedDataList = [...cards].map((card) => {
-        const id = card.querySelector('.card-id').textContent;
-        const value = card.querySelector('.card-value').value;
-        const key = card.dataset.id;
-        return new Data(id, value, key);
-    });
-
-    if (!extractedDataList || extractedDataList.length == 0) return;
-
-    // 기존 wholeData와 비교해서 값이 달라진 데이터만 edittedData에 담음
-    for (const data of extractedDataList) {
-        const originData = wholeDataDict[data.key];
-
-        if (!originData) continue;
-        if (originData.value == data.value) continue;
-
-        edittedDataDict[data.key] = data;
-    }
-    renderUI(RenderStatus.APPLY_EDIT, null, edittedDataDict);
-    wholeDataDict = edittedDataDict;
+    setApplyButtonVisible(true);
 }
 
-const showButtons = () => {
-    editButtonTable.classList.add('slide-right');
-    applyEditButton.style.display = 'block';
-    cancelEditButton.style.display = 'block';
-}
-
-const onDeleteData = (e, data, card) => {
+const onDelete = (e, data, card) => {
     e.preventDefault();
     clearFields();
     card.classList.add("fade-out");
@@ -218,8 +188,9 @@ const getColor = (value) => {
 // 편집한 값에 해당하는 카드 업데이트
 const updateCard = (data, card) => {
     const cardValue = card.querySelector('.card-value');
-    cardValue.textContent = data.value;
     const color = getColor(data.value);
+
+    cardValue.textContent = data.value;
     cardValue.style.color = color;
     card.style.borderColor = color;
 };
@@ -258,10 +229,11 @@ const updateSectionVisibility = () => {
 
 // 가장 끝에 있는 그래프의 오른쪽에 + 버튼을 추가
 const displayGraphAddButton = () => {
-    const graphs = document.querySelectorAll('.graph-wrapper');
+    const graphs = [...document.querySelectorAll('.graph-wrapper')];
     if (graphs.length === 0) return;
-    const lastButton = graphs[graphs.length - 1].querySelector('.graph-add-button');
-    if (!lastButton) return;
+    
+    // 마지막 그래프의 last button 선택
+    const lastButton = graphs.at(graphs.length - 1).querySelector('.graph-add-button');
     
     lastButton.addEventListener('click', () => {
         window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
@@ -288,9 +260,34 @@ const isInputValidate = (id, value) => {
     return true;
 };
 
-const setEventListeners = () => {
+const setApplyButtonVisible = (isShow) => {
+    if (isShow) {
+        editButtonTable.classList.remove('slide-left');
+        editButtonTable.classList.add('active', 'slide-right');
+    } else {
+        editButtonTable.classList.remove('slide-right');
+        editButtonTable.classList.add('slide-left');
+        editButtonTable.addEventListener('animationend', () => {
+            editButtonTable.classList.remove('active');    
+        }, { once: true });
+    }
+}
+
+const resetValues = () => {
+    const cards = [...cardTable.querySelectorAll('.card-wrapper')];
+    
+    if (cards.length === 0) return;
+
+    for (const card of cards) {
+        const valueElement = card.querySelector('.card-value');
+        const data = wholeDataDict[card.dataset.id];
+        valueElement.value = data.value;
+    }
+}
+
+const initEvents = () => {
     // Input의 입력 이벤트를 받아 체크 후 feedback 텍스트, 버튼 색 결정
-    const onCheckAddInput = (e) => {
+    const onCheckInput = (e) => {
         e.preventDefault();
         const id = idInput.value.trim();
         const value = valueInput.value.trim();
@@ -325,12 +322,61 @@ const setEventListeners = () => {
         }
     };
 
+    const onApplyEdit = (e) => {
+        e.preventDefault();
+        const edittedDataDict = {};
+    
+        // 카드 테이블에 생성된 카드들을 가져옴
+        const cards = [...cardTable.querySelectorAll('.card-wrapper')];
+        if (cards.length === 0) return;
+        
+        const extractedDataList = cards.reduce((acc, card) => {
+            const id = card.querySelector('.card-id').textContent;
+            const value = card.querySelector('.card-value').value;
+            const key = card.dataset.id;
+        
+            // 숫자가 아닌 값이 있다면 누적하지 않음
+            if (!isInputValidate(id, value)) {
+                return acc;
+            }
+    
+            // 통과했다면 새로운 Data를 추가
+            acc.push(new Data(id, value, key));
+            return acc;
+        }, []);
+    
+        if (extractedDataList.length == 0) {
+            alert("수정된 값을 다시 확인해주세요!");
+            return;
+        }
+            
+        // 기존 데이터와 비교해서 값이 달라진 데이터만 edittedDataDict에 담음
+        for (const data of extractedDataList) {
+            const originData = wholeDataDict[data.key];
+    
+            if (!originData) continue;
+            if (originData.value == data.value) continue;
+    
+            edittedDataDict[data.key] = data;
+            // 기존의 value에도 수정한 내용 반영
+            originData.value = data.value;
+        }
+        renderUI(RenderStatus.APPLY_EDIT, null, edittedDataDict);
+        setApplyButtonVisible(false);
+    }
+
+    const onCancelEdit = (e) => {
+        e.preventDefault();
+        setApplyButtonVisible(false);
+        resetValues();
+    }
+
     const onAddValue = (e) => {
         e.preventDefault();
         const id = idInput.value;
         const value = valueInput.value;
         if (!isInputValidate(id, value)) return;
-        
+
         const newData = new Data(id, value);
         wholeDataDict[newData.key] = newData;
         
@@ -345,7 +391,7 @@ const setEventListeners = () => {
             const parsed = JSON.parse(jsonTextarea.value);
             
             // 유효성 검사
-            if (!Array.isArray(parsed) || parsed.length == 0) {
+            if (!Array.isArray(parsed) || parsed.length === 0) {
                 jsonFeedbackText.textContent = "* 올바른 형식의 JSON을 입력해주세요.";
                 return;
             }
@@ -369,15 +415,20 @@ const setEventListeners = () => {
         }
     }
 
-    
-    idInput.addEventListener('input', onCheckAddInput);
-    valueInput.addEventListener('input', onCheckAddInput);
+    // 값 입력 검사
+    idInput.addEventListener('input', onCheckInput);
+    valueInput.addEventListener('input', onCheckInput);
     jsonTextarea.addEventListener('input', onCheckTextarea);
+    
+    // 값 추가
     addValueButton.addEventListener('click', onAddValue);
     applyAdvancedValueButton.addEventListener('click', onApplyAdvancedValue);
+    
+    // 값 편집
     applyEditButton.addEventListener('click', onApplyEdit);
+    cancelEditButton.addEventListener('click', onCancelEdit);
 };
 
-setEventListeners();
+initEvents();
 // 초기 렌더링
 renderUI(RenderStatus.ALL);

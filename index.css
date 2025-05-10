@@ -2,7 +2,7 @@
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-0.625rem);
     }
 
     to {
@@ -14,12 +14,24 @@
 @keyframes slideRight {
     from {
         opacity: 0;
-        transform: translateX(-10px);
+        transform: translateX(-0.5rem);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(-0.5rem);
     }
 }
 
@@ -80,6 +92,10 @@
     display: block;
 }
 
+.slide-left {
+    animation: slideLeft 0.3s ease-in-out;
+}
+
 .slide-right {
     animation: slideRight 0.3s ease-in-out;
 }
@@ -115,6 +131,7 @@ section .section-title-wrapper {
 
 section .section-title {
     width: 100%;
+    height: 2.5rem;
     font-size: 1.7rem;
     font-weight: 600;
 }
@@ -249,12 +266,15 @@ header .applicant-name {
 }
 
 .edit-apply-section {
+    display: none;
+}
+
+.edit-apply-section.active {
     display: flex;
 }
 
 .apply-all-edit-button {
     all: unset;
-    display: none;
     background-color: dodgerblue;
     border-radius: 20rem;
     color: white;
@@ -268,7 +288,6 @@ header .applicant-name {
 
 .cancel-all-edit-button {
     all: unset;
-    display: none;
     border-radius: 20rem;
     color: dodgerblue;
     text-align: center;
