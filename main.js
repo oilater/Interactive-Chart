@@ -12,7 +12,7 @@ const RenderStatus = Object.freeze({
     ALL: Symbol('ALL'),
     ADD: Symbol('ADD'),
     DELETE: Symbol('DELETE'),
-    EDIT: Symbol('EDIT'),
+    APPLY_EDIT: Symbol('EDIT'),
   });
 
 // DOM 엘리먼트
@@ -24,6 +24,9 @@ const cardTable = document.querySelector(".value-card-table");
 const graphTable = document.querySelector(".graph-table");
 const jsonTextarea = document.querySelector(".advanced-value-textarea");
 const addValueButton = document.querySelector(".add-value-button");
+const editButtonTable = document.querySelector('.edit-apply-section');
+const applyEditButton = document.querySelector('.apply-all-edit-button');
+const cancelEditButton = document.querySelector('.cancel-all-edit-button');
 const applyAdvancedValueButton = document.querySelector(".apply-advanced-value-button");
 const inputFeedBackText = document.querySelector(".feedback-text");
 const jsonFeedbackText = document.querySelector(".json-feedback-text");
@@ -31,13 +34,13 @@ const idInput = document.querySelector("#id-input");
 const valueInput = document.querySelector("#value-input");
 
 // Data 인스턴스를 관리할 객체
-let wholeData = {};
+let wholeDataDict = {};
 
 class Data {
-    constructor(id, value) {
+    constructor(id, value, key = null) {
         this.id = id;
         this.value = Number(value);
-        this.key = crypto.randomUUID();
+        this.key = key || crypto.randomUUID(); // 키가 null이라면 randomUUID 생성
     }
 
     toJSON() {
@@ -46,18 +49,14 @@ class Data {
 }
 
 // RenderStatus를 인자로 받아 렌더링 범위를 결정
-const renderUI = (status = RenderStatus.ALL, data = null) => {
-    // 값 삭제와 편집의 경우, 생성 시에 설정한 data-id를 통해 요소를 가져옴
-    const selectedGraph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.key}"]`);
-    const selectedCard = cardTable.querySelector(`.card-wrapper[data-id="${data?.key}"]`);
-    
+const renderUI = (status = RenderStatus.ALL, data = null, edittedDataDict = null) => {
     switch (status) {
         case RenderStatus.ALL:
             // 그래프 및 카드 테이블 초기화
             graphTable.replaceChildren();
             cardTable.replaceChildren();
             
-            Object.values(wholeData).forEach((data) => {
+            Object.values(wholeDataDict).forEach((data) => {
                 renderGraph(data);
                 renderCard(data);
             });
@@ -68,19 +67,27 @@ const renderUI = (status = RenderStatus.ALL, data = null) => {
             renderCard(data);
             break;
 
-        case RenderStatus.EDIT:
-            if (!selectedGraph || !selectedCard) return;
-            updateGraph(data, selectedGraph);
-            updateCard(data, selectedCard);
+        case RenderStatus.APPLY_EDIT:
+            Object.values(edittedDataDict).forEach((edittedData) => {
+                // 해당 data에 해당하는 카드와 그래프
+                const graph = graphTable.querySelector(`.graph-wrapper[data-id="${edittedData?.key}"]`);
+                const card = cardTable.querySelector(`.card-wrapper[data-id="${edittedData?.key}"]`);
+                updateGraph(edittedData, graph);
+                updateCard(edittedData, card);
+            });
             break;
         
         case RenderStatus.DELETE:
-            if (!selectedGraph || !selectedCard) return;
-            selectedGraph.remove()
-            selectedCard.remove();
+            const graph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.key}"]`);
+            const card = cardTable.querySelector(`.card-wrapper[data-id="${data?.key}"]`);
+            if (!graph || !card) return;
+            graph.remove()
+            card.remove();
             break;
     }
-    updateJSONTextarea();
+
+    const targetDataDict = status !== RenderStatus.APPLY_EDIT ? wholeDataDict : edittedDataDict;
+    updateJSONTextarea(targetDataDict);
     updateSectionVisibility();
     displayGraphAddButton();
     window.scrollTo({ top: 0, behavior: 'smooth' }); // 스크롤 맨 위로 이동
@@ -144,7 +151,6 @@ const renderCard = (data) => {
 const initCard = (data, card) => {
     const cardId = card.querySelector('.card-id');
     const cardValue = card.querySelector('.card-value');
-    const editButton = card.querySelector('.card-edit-button');
     const deleteButton = card.querySelector('.card-delete-button');
 
     card.dataset.id = data.key; // 값 편집 및 삭제 시 카드를 참조하기 위한 data-id 적용
@@ -153,9 +159,45 @@ const initCard = (data, card) => {
     const color = getColor(data.value); // value에 따라 색상을 지정
     cardValue.style.color = color;
     card.style.borderColor = color;
+    deleteButton.addEventListener('click', (e) => onDeleteData(e, data, card));
+}
 
-    deleteButton.addEventListener("click", (e) => onDeleteData(e, data, card));
-    editButton.addEventListener("click", (e) => onEditData(e, data, card));
+const onApplyEdit = (e) => {
+    e.preventDefault();
+    const edittedDataDict = {};
+
+    // 카드 테이블에 생성된 카드들을 가져옴
+    const cards = cardTable.querySelectorAll('.card-wrapper');
+    
+    if (!cards) return;
+    
+    // 모든 카드들의 데이터를 추출
+    const extractedDataList = [...cards].map((card) => {
+        const id = card.querySelector('.card-id').textContent;
+        const value = card.querySelector('.card-value').value;
+        const key = card.dataset.id;
+        return new Data(id, value, key);
+    });
+
+    if (!extractedDataList || extractedDataList.length == 0) return;
+
+    // 기존 wholeData와 비교해서 값이 달라진 데이터만 edittedData에 담음
+    for (const data of extractedDataList) {
+        const originData = wholeDataDict[data.key];
+
+        if (!originData) continue;
+        if (originData.value == data.value) continue;
+
+        edittedDataDict[data.key] = data;
+    }
+    renderUI(RenderStatus.APPLY_EDIT, null, edittedDataDict);
+    wholeDataDict = edittedDataDict;
+}
+
+const showButtons = () => {
+    editButtonTable.classList.add('slide-right');
+    applyEditButton.style.display = 'block';
+    cancelEditButton.style.display = 'block';
 }
 
 const onDeleteData = (e, data, card) => {
@@ -164,63 +206,10 @@ const onDeleteData = (e, data, card) => {
     card.classList.add("fade-out");
     // fadeOut 애니메이션 종료 후 카드를 삭제
     card.addEventListener("animationend", () => {
-        delete wholeData[data.key];
+        delete wholeDataDict[data.key];
         renderUI(RenderStatus.DELETE, data);
     });
 }
-
-// 카드의 수정 버튼 클릭 시
-const onEditData = (e, data, card) => {
-    e.preventDefault();
-    const cardValue = card.querySelector('.card-value');
-    
-    // 편집 모드 진입
-    const enterEditMode = () => {
-        card.classList.add('editing');
-        cardValue.removeAttribute('readonly');
-        cardValue.focus();
-
-        // 버튼 클릭 시 이벤트 처리
-        cancelButton.addEventListener('click', onCancelEdit);
-        confirmButton.addEventListener('click', onConfirmEdit);
-    };
-
-    // 편집 모드 종료
-    const exitEditMode = () => {
-        card.classList.remove('editing');
-        cardValue.setAttribute('readonly', true);
-        // 이벤트 리스너 해제
-        cancelButton.removeEventListener('click', onCancelEdit);
-        confirmButton.removeEventListener('click', onConfirmEdit);
-    };
-
-    // 편집 모드에서 확인 버튼을 누를 때
-    const onConfirmEdit = (e) => {
-        e.preventDefault();
-        const newValue = Number(cardValue.value);
-
-        if (!isNaN(newValue)) {
-            data.value = newValue;
-            renderUI(RenderStatus.EDIT, data);
-            exitEditMode();
-        } else {
-            alert("숫자 값만 입력해주세요!");
-        }
-    };
-
-    // 편집 모드에서 취소 버튼을 누를 때
-    const onCancelEdit = (e) => {
-        e.preventDefault();
-        cardValue.value = data.value; // 원래 값으로 되돌림
-        exitEditMode();
-    };
-
-    // 편집 적용 여부를 결정하는 '취소', '확인' 버튼
-    const cancelButton = card.querySelector('.edit-cancel-button');
-    const confirmButton = card.querySelector('.edit-confirm-button');
-
-    enterEditMode(); // 편집 모드 진입
-};
 
 const getColor = (value) => {
     return value >= 100 ? COLOR_HIGH_VALUE : value >= 50 ? COLOR_MEDIUM_VALUE : COLOR_LOW_VALUE;
@@ -236,14 +225,14 @@ const updateCard = (data, card) => {
 };
 
 // Textarea에 JSON 반영
-const updateJSONTextarea = () => {
-    const dataList = Object.values(wholeData).map((data) => data.toJSON());
+const updateJSONTextarea = (dataDict) => {
+    const dataList = Object.values(dataDict).map((data) => data.toJSON());
     jsonTextarea.value = dataList.length !=0 ? JSON.stringify(dataList, null, 2) : '';
 };
 
 // 데이터 수에 따라 각 Section 표시 여부 결정
 const updateSectionVisibility = () => {
-    const hasData = Object.keys(wholeData).length > 0;
+    const hasData = Object.keys(wholeDataDict).length > 0;
     let addDescription;
     let advancedEditTitle;
     let sectionVisibility;
@@ -290,9 +279,18 @@ const clearFields = () => {
     applyAdvancedValueButton.classList.remove(ACTIVE_COLOR);
 }
 
+const isInputValidate = (id, value) => {
+    if (!id.trim()) {
+        return false;
+    } else if (!value.trim() || isNaN(value)) {
+        return false;
+    }
+    return true;
+};
+
 const setEventListeners = () => {
     // Input의 입력 이벤트를 받아 체크 후 feedback 텍스트, 버튼 색 결정
-    const onCheckInput = (e) => {
+    const onCheckAddInput = (e) => {
         e.preventDefault();
         const id = idInput.value.trim();
         const value = valueInput.value.trim();
@@ -334,7 +332,7 @@ const setEventListeners = () => {
         if (!isInputValidate(id, value)) return;
         
         const newData = new Data(id, value);
-        wholeData[newData.key] = newData;
+        wholeDataDict[newData.key] = newData;
         
         renderUI(RenderStatus.ADD, newData);
         clearFields();
@@ -352,7 +350,7 @@ const setEventListeners = () => {
                 return;
             }
             // 전체 데이터 비우기
-            wholeData = {};
+            wholeDataDict = {};
 
             // 데이터 생성
             for (const { id, value } of parsed) {
@@ -361,7 +359,7 @@ const setEventListeners = () => {
                     return;
                 }
                 const data = new Data(id.trim(), value);
-                wholeData[data.key] = data;
+                wholeDataDict[data.key] = data;
             };
 
             renderUI(RenderStatus.ALL);
@@ -371,20 +369,13 @@ const setEventListeners = () => {
         }
     }
 
-    const isInputValidate = (id, value) => {
-        if (!id || !id.trim()) {
-            return false;
-        } else if (!value.trim() || isNaN(value)) {
-            return false;
-        }
-        return true;
-    };
-
-    idInput.addEventListener('input', onCheckInput);
-    valueInput.addEventListener('input', onCheckInput);
+    
+    idInput.addEventListener('input', onCheckAddInput);
+    valueInput.addEventListener('input', onCheckAddInput);
     jsonTextarea.addEventListener('input', onCheckTextarea);
     addValueButton.addEventListener('click', onAddValue);
     applyAdvancedValueButton.addEventListener('click', onApplyAdvancedValue);
+    applyEditButton.addEventListener('click', onApplyEdit);
 };
 
 setEventListeners();

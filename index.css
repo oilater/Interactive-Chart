@@ -11,6 +11,18 @@
     }
 }
 
+@keyframes slideRight {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* 그래프 추가 버튼 애니메이션 */
 @keyframes floatUpDown {
 
@@ -32,7 +44,7 @@
     }
 
     50% {
-        transform: translateY(-0.1rem);
+        transform: translateY(-0.05rem);
     }
 }
 
@@ -60,6 +72,18 @@
     }
 }
 
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+.slide-right {
+    animation: slideRight 0.3s ease-in-out;
+}
+
 /* fade-out 애니메이션 설정 */
 .card-wrapper.fade-out,
 .graph-wrapper.fade-out {
@@ -85,16 +109,21 @@ body section {
 }
 
 /* 섹션 제목 */
+section .section-title-wrapper {
+    height: 100%;
+}
+
 section .section-title {
+    width: 100%;
     font-size: 1.7rem;
     font-weight: 600;
-    margin-bottom: 1rem;
 }
 
 /* 섹션 설명 */
 section .section-description {
     font-size: 1.2rem;
     font-weight: 400;
+    margin-top: 1rem;
     margin-bottom: 2.5rem;
     color: #80808066;
 }
@@ -214,6 +243,46 @@ header .applicant-name {
 }
 
 /* [값 편집] */
+.edit-value-title-section {
+    display: flex;
+    align-items: center;
+}
+
+.edit-apply-section {
+    display: flex;
+}
+
+.apply-all-edit-button {
+    all: unset;
+    display: none;
+    background-color: dodgerblue;
+    border-radius: 20rem;
+    color: white;
+    text-align: center;
+    margin-left: 1rem;
+    width: 4rem;
+    height: 2.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in;
+}
+
+.cancel-all-edit-button {
+    all: unset;
+    display: none;
+    border-radius: 20rem;
+    color: dodgerblue;
+    text-align: center;
+    margin-left: 2rem;
+    width: 4rem;
+    height: 2.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in;
+}
+
+.apply-all-edit-button:hover {
+    background-color: #1873cc;
+}
+
 /* 카드 테이블 */
 .value-card-table {
     width: 100%;
@@ -240,49 +309,6 @@ header .applicant-name {
     transition: background-color 0.4s ease-in-out;
 }
 
-/* 카드 hover */
-.card-wrapper:hover:not(.editing) {
-    background-color: #393939c7;
-}
-
-/* 카드 버튼 */
-.card-wrapper .card-button {
-    border: none;
-    background-color: inherit;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.card-wrapper .card-actions,
-.card-wrapper .card-edit-actions {
-    position: absolute;
-    display: none;
-    gap: 0.8rem;
-    margin-top: 0.5rem;
-}
-
-/* 카드 편집 모드 */
-.card-wrapper.editing .card-edit-actions {
-    position: absolute;
-    display: flex;
-    bottom: -3rem;
-}
-
-.card-edit-actions .edit-confirm-button {
-    color: dodgerblue;
-}
-
-.card-edit-actions .edit-cancel-button {
-    color: rgb(123, 123, 123)
-}
-
-.card-wrapper:hover:not(.editing) .card-actions {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-}
-
 /* 카드 id */
 .card-wrapper .card-id {
     font-size: 1.1rem;
@@ -298,6 +324,21 @@ header .applicant-name {
     font-size: 1.6rem;
     font-weight: 600;
     color: dodgerblue;
+}
+
+.card-actions {
+    position: absolute;
+    gap: 0.8rem;
+    bottom: -2.5rem;
+}
+
+.card-delete-button {
+    all: unset;
+    font-size: 1rem;
+    background-color: white;
+    color: rgba(255, 0, 0, 0.7);
+    text-align: center;
+    cursor: pointer;
 }
 
 /* 값 고급 편집 */
