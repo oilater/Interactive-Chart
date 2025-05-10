@@ -1,4 +1,5 @@
 // 상수 선언
+const MAX_ID_LENGTH = 6;
 const MAX_VALUE_LENGTH = 7;
 const GRAPH_BG_HEIGHT = 20;
 const GRAPH_ANIMATION_DURATION = 600;
@@ -13,7 +14,8 @@ const RenderStatus = Object.freeze({
     ADD: Symbol('ADD'),
     DELETE: Symbol('DELETE'),
     APPLY_EDIT: Symbol('APPLY_EDIT'),
-  });
+});
+
 
 // DOM 엘리먼트
 const graphSection = document.querySelector(".graph-section");
@@ -163,26 +165,23 @@ const initCard = (data, card) => {
     card.style.borderColor = color;
     valueElement.addEventListener('click', onEditting);
     deleteButton.addEventListener('click', (e) => onDelete(e, data, card));
-}
+};
 
 const onEditting = (e) => {
     e.preventDefault();
     setApplyButtonVisible(true);
-}
+};
 
 const onDelete = (e, data, card) => {
     e.preventDefault();
     clearFields();
+    setApplyButtonVisible(false);
     card.classList.add("fade-out");
     // fadeOut 애니메이션 종료 후 카드를 삭제
     card.addEventListener("animationend", () => {
         delete wholeDataDict[data.key];
         renderUI(RenderStatus.DELETE, data);
-    });
-}
-
-const getColor = (value) => {
-    return value >= 100 ? COLOR_HIGH_VALUE : value >= 50 ? COLOR_MEDIUM_VALUE : COLOR_LOW_VALUE;
+    }, { once: true });
 };
 
 // 편집한 값에 해당하는 카드 업데이트
@@ -227,6 +226,10 @@ const updateSectionVisibility = () => {
     editSection.style.display = sectionVisibility;
 };
 
+const getColor = (value) => {
+    return value >= 100 ? COLOR_HIGH_VALUE : value >= 50 ? COLOR_MEDIUM_VALUE : COLOR_LOW_VALUE;
+};
+
 // 가장 끝에 있는 그래프의 오른쪽에 + 버튼을 추가
 const displayGraphAddButton = () => {
     const graphs = [...document.querySelectorAll('.graph-wrapper')];
@@ -239,7 +242,7 @@ const displayGraphAddButton = () => {
         window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
         idInput.focus({preventScroll: true});
     });
-}
+};
 
 // 초기화
 const clearFields = () => {
@@ -249,7 +252,7 @@ const clearFields = () => {
     jsonFeedbackText.textContent = '';
     addValueButton.classList.remove(ACTIVE_COLOR);
     applyAdvancedValueButton.classList.remove(ACTIVE_COLOR);
-}
+};
 
 const isInputValidate = (id, value) => {
     if (!id.trim()) {
@@ -258,6 +261,18 @@ const isInputValidate = (id, value) => {
         return false;
     }
     return true;
+};
+
+const resetValues = () => {
+    const cards = [...cardTable.querySelectorAll('.card-wrapper')];
+    
+    if (cards.length === 0) return;
+
+    for (const card of cards) {
+        const valueElement = card.querySelector('.card-value');
+        const data = wholeDataDict[card.dataset.id];
+        valueElement.value = data.value;
+    }
 };
 
 const setApplyButtonVisible = (isShow) => {
@@ -271,19 +286,7 @@ const setApplyButtonVisible = (isShow) => {
             editButtonTable.classList.remove('active');    
         }, { once: true });
     }
-}
-
-const resetValues = () => {
-    const cards = [...cardTable.querySelectorAll('.card-wrapper')];
-    
-    if (cards.length === 0) return;
-
-    for (const card of cards) {
-        const valueElement = card.querySelector('.card-value');
-        const data = wholeDataDict[card.dataset.id];
-        valueElement.value = data.value;
-    }
-}
+};
 
 const initEvents = () => {
     // Input의 입력 이벤트를 받아 체크 후 feedback 텍스트, 버튼 색 결정
@@ -345,7 +348,7 @@ const initEvents = () => {
             return acc;
         }, []);
     
-        if (extractedDataList.length == 0) {
+        if (extractedDataList.length === 0) {
             alert("수정된 값을 다시 확인해주세요!");
             return;
         }
@@ -355,7 +358,7 @@ const initEvents = () => {
             const originData = wholeDataDict[data.key];
     
             if (!originData) continue;
-            if (originData.value == data.value) continue;
+            if (originData.value === data.value) continue;
     
             edittedDataDict[data.key] = data;
             // 기존의 value에도 수정한 내용 반영
@@ -369,7 +372,7 @@ const initEvents = () => {
         e.preventDefault();
         setApplyButtonVisible(false);
         resetValues();
-    }
+    };
 
     const onAddValue = (e) => {
         e.preventDefault();
@@ -389,32 +392,46 @@ const initEvents = () => {
         try {
             // JSON 파싱
             const parsed = JSON.parse(jsonTextarea.value);
-            
+    
             // 유효성 검사
             if (!Array.isArray(parsed) || parsed.length === 0) {
                 jsonFeedbackText.textContent = "* 올바른 형식의 JSON을 입력해주세요.";
                 return;
             }
+    
             // 전체 데이터 비우기
             wholeDataDict = {};
-
+    
             // 데이터 생성
             for (const { id, value } of parsed) {
-                if (!id.trim()) {
-                    jsonFeedbackText.textContent = "* 아이디에 빈 값이 있습니다."
+                const trimmedId = id?.trim();
+                if (!trimmedId) {
+                    jsonFeedbackText.textContent = "* 아이디에 빈 값이 있습니다.";
                     return;
                 }
-                const data = new Data(id.trim(), value);
-                wholeDataDict[data.key] = data;
-            };
 
+                if (trimmedId.length > MAX_ID_LENGTH) {
+                    jsonFeedbackText.textContent = "* 아이디는 6자 이하로 입력해주세요.";
+                    return;
+                }
+                
+                if (!Number.isFinite(value) || value.toString().length > MAX_VALUE_LENGTH) {
+                    jsonFeedbackText.textContent = "* 값은 7자리 이하의 숫자로 입력해주세요.";
+                    return;
+                }
+
+                const data = new Data(trimmedId, value);
+                wholeDataDict[data.key] = data;
+            }
+            
             renderUI(RenderStatus.ALL);
             clearFields();
+            setApplyButtonVisible(false);
         } catch (error) {
-            jsonFeedbackText.textContent = "* 올바른 형식의 JSON을 입력해주세요."
+            jsonFeedbackText.textContent = "* 올바른 형식의 JSON을 입력해주세요.";
         }
-    }
-
+    };
+    
     // 값 입력 검사
     idInput.addEventListener('input', onCheckInput);
     valueInput.addEventListener('input', onCheckInput);
@@ -422,11 +439,11 @@ const initEvents = () => {
     
     // 값 추가
     addValueButton.addEventListener('click', onAddValue);
-    applyAdvancedValueButton.addEventListener('click', onApplyAdvancedValue);
     
-    // 값 편집
+    // 값 편집 및 값 고급 편집
     applyEditButton.addEventListener('click', onApplyEdit);
     cancelEditButton.addEventListener('click', onCancelEdit);
+    applyAdvancedValueButton.addEventListener('click', onApplyAdvancedValue);
 };
 
 initEvents();
