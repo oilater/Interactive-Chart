@@ -1,8 +1,7 @@
 # 📊 Interactive Chart
 
-안녕하세요, 아이엠파인 SD팀에 지원하게 된 프론트엔드 개발자 김성현이라고 합니다!
-순수 Javascript로 개발을 하며 데이터의 구조와 가독성, 그리고 UX/UI에 대해 많은 고민을 했습니다.
-프로젝트를 참고하실 때 도움이 되실 것 같아 코드를 간략하게 소개하고자 합니다.
+안녕하세요, 아이엠파인 SD팀에 지원하게 된 프론트엔드 개발자 김성현이라고 합니다!<br>
+프로젝트를 참고하실 때 도움이 되실 것 같아 코드를 간략하게 소개하고자 합니다.<br>
 
 ### 1. 과제 프리뷰
 ![interactive-chart](https://github.com/user-attachments/assets/5af65b56-eb4c-4ebc-9e7a-f6f3f033bdf5)
