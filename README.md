@@ -80,10 +80,17 @@ class DataManager {
 
 ```javascript
 const RenderStatus = Object.freeze({
-    ALL: Symbol('ALL'), // 전체 그래프, 카드 렌더링
-    ADD: Symbol('ADD'), // 추가된 데이터에 해당하는 그래프, 카드 렌더링
-    DELETE: Symbol('DELETE'), // 수정된 데이터 리스트에 해당하는 그래프, 카드 렌더링
-    UPDATE: Symbol('UPDATE'), // 삭제된 데이터에 해당하는 그래프, 카드 삭제
+    // 전체 그래프, 카드 렌더링
+    ALL: Symbol('ALL'),
+
+    // 추가된 데이터에 해당하는 그래프, 카드 렌더링
+    ADD: Symbol('ADD'), 
+
+    // 수정된 데이터 리스트에 해당하는 그래프, 카드 렌더링
+    DELETE: Symbol('DELETE'), 
+
+    // 삭제된 데이터에 해당하는 그래프, 카드 삭제
+    UPDATE: Symbol('UPDATE'), 
 });
 ```
 
