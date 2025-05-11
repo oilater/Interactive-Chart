@@ -65,21 +65,21 @@ class DataManager {
 <br>
 <br>
 
+- RenderStatus
+  - 불필요한 UI 렌더링을 방지하기 위해 상태(State)를 정의했습니다.
+
+
+  - `ALL`: 전체 렌더링 <br>
+  - `ADD`: 데이터 추가 시 렌더링 <br>
+  - `UPDATE`: 편집한 데이터 전부 렌더링 <br>
+  - `DELETE`: 선택한 데이터 제거<br>
+
 - renderByStatus
-  - RenderStatus 값에 따라 UI 렌더링을 다르게 처리하는 함수입니다.
-
-
-  - `ALL`: 전체를 초기화하여 다시 렌더링<br>
-  - `ADD`: 단일 데이터 추가 렌더링<br>
-  - `UPDATE`: 기존 데이터를 업데이트하여 반영<br>
-  - `DELETE`: 특정 데이터를 제거<br>
-
-
-  - @param
-    
-  - `status`: 렌더링하고자 하는 Status (ALL, ADD, DELETE, UPDATE)<br>
-  - `data`: 추가 또는 삭제하려는 데이터<br>
-  - `dataList`: 수정한 데이터들을 담은 배열<br
+  - RenderStatus 값에 따라 UI 렌더링을 다르게 처리하는 함수입니다. <br>
+  - Parameters <br>
+      - `status`: 렌더링하고자 하는 Status <br>
+      - `data`: 추가 또는 삭제하려는 데이터 <br>
+      - `dataList`: 수정한 데이터들을 담은 배열 <br>
 
 
 ```javascript
@@ -87,10 +87,6 @@ class DataManager {
 const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
     switch (status) {
         case RenderStatus.ALL:
-            // 테이블 초기화
-            graphTable.replaceChildren();
-            cardTable.replaceChildren();
-            
             dataManager.getDataList().forEach((data) => {
                 renderGraph(data);
                 renderCard(data);
@@ -123,7 +119,7 @@ const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null)
 
     // 공통 실행 로직
     updateJSONTextarea(); // JSON 업데이트
-    updateSectionVisibility();
+    updateSectionVisibility(); // 데이터의 수에 따라 섹션을 표시
     showAddButtonOnGraph(); // 마지막 그래프 오른쪽에 + 버튼 생성
 };
 ```
