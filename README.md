@@ -1,6 +1,6 @@
 # 📊 Interactive Chart
 
-안녕하세요, 아이엠파인 SD팀에 지원하게 된 프론트엔드 개발자 김성현이라고 합니다!<br>
+안녕하세요, 아이엠파인 SD팀에 지원한 프론트엔드 개발자 김성현이라고 합니다!<br>
 프로젝트를 참고하실 때 도움이 되실 것 같아 코드를 간략하게 소개하고자 합니다.<br>
 
 ## 1. 과제 프리뷰
@@ -73,6 +73,16 @@ class DataManager {
   - `UPDATE`: 편집한 데이터 전부 렌더링 <br>
   - `DELETE`: 선택한 데이터 제거<br>
 
+```javascript
+const RenderStatus = Object.freeze({
+    ALL: Symbol('ALL'), // 전체 그래프, 카드 렌더링
+    ADD: Symbol('ADD'), // 추가된 데이터에 해당하는 그래프, 카드 렌더링
+    DELETE: Symbol('DELETE'), // 수정된 데이터 리스트에 해당하는 그래프, 카드 렌더링
+    UPDATE: Symbol('UPDATE'), // 삭제된 데이터에 해당하는 그래프, 카드 삭제
+});
+```
+
+
 - renderByStatus
   - RenderStatus 값에 따라 UI 렌더링을 다르게 처리하는 함수입니다. <br>
   - Parameters <br>
@@ -81,4 +91,27 @@ class DataManager {
       - `data`: 추가 또는 삭제하려는 데이터 <br>
       - `dataList`: 수정한 데이터들을 담은 배열 <br>
 
+```javascript
+const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
+    switch (status) {
+        case RenderStatus.ALL:
 
+            break;
+
+        case RenderStatus.ADD:
+            
+            break;
+
+        case RenderStatus.UPDATE:
+            
+            break;
+    
+        case RenderStatus.DELETE:
+            
+            break;
+    }
+
+    // 공통로직
+    updateJSONTextarea();
+};
+```
