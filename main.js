@@ -1,25 +1,26 @@
-// 메인 스크립트
+// 랜더링과 이벤트 처리를 담당하는 메인 스크립트
 
-// 상수 선언
+// 상수
 const MAX_ID_LENGTH = 6;
 const MAX_VALUE_LENGTH = 7;
-const GRAPH_BG_HEIGHT = 20;
+const GRAPH_MAX_HEIGHT = 20;
 const GRAPH_ANIMATION_DURATION = 600;
-const COLOR_HIGH_VALUE = '#1873cc';
-const COLOR_MEDIUM_VALUE = 'dodgerblue';
-const COLOR_LOW_VALUE = '#1e90ff80';
-const ACTIVE_COLOR = 'active-button';
 
-// 효율적인 렌더링을 위한 상태 분기
-const RenderStatus = Object.freeze({
-    ALL: Symbol('ALL'),
-    ADD: Symbol('ADD'),
-    DELETE: Symbol('DELETE'),
-    UPDATE: Symbol('UPDATE'),
-});
+// 색상
+const COLOR_HIGH = '#1873cc';
+const COLOR_MEDIUM = 'dodgerblue';
+const COLOR_LOW = '#1e90ff80';
 
+// 동적으로 추가되는 클래스
+const ACTIVE = 'active'; // display가 block 또는 none이 될 때
+const BUTTON_ACTIVE = 'active-button'; // 버튼이 활성화될 때
+const POSITION_EMPTY = 'no-value-positon'; // 초기화면 값 추가 섹션의 margin 값 지정
+const SLIDE_SHOW = 'slide-right'; // 값 편집 후 apply, cancel 버튼 보여줄 때
+const SLIDE_HIDE = 'slide-left'; // 값 편집 후 apply, cancel 버튼 숨길 때
 
 // DOM 엘리먼트
+const graphTemplate = document.querySelector('.graph-template');
+const cardTemplate = document.querySelector('.card-template');
 const graphSection = document.querySelector(".graph-section");
 const editSection = document.querySelector(".edit-value-section");
 const addSection = document.querySelector(".add-value-section");
@@ -40,11 +41,20 @@ const valueInput = document.querySelector("#value-input");
 // dataManager 인스턴스 생성
 const dataManager = DataManager.getInstance();
 
-// RenderStatus를 인자로 받아 렌더링 범위를 결정
-const renderUI = (status = RenderStatus.ALL, data = null, dataDict = null) => {
+// 효율적인 렌더링을 위한 상태
+const RenderStatus = Object.freeze({
+    ALL: Symbol('ALL'), // 전체 그래프, 카드 렌더링
+    ADD: Symbol('ADD'), // 추가된 데이터에 해당하는 그래프, 카드 렌더링
+    DELETE: Symbol('DELETE'), // 수정된 데이터 리스트에 해당하는 그래프, 카드 렌더링
+    UPDATE: Symbol('UPDATE'), // 삭제된 데이터에 해당하는 그래프, 카드 삭제
+});
+
+
+// RenderStatus에 따라 랜더링
+const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
     switch (status) {
         case RenderStatus.ALL:
-            // 그래프 및 카드 테이블 초기화
+            // 테이블 초기화
             graphTable.replaceChildren();
             cardTable.replaceChildren();
             
@@ -60,15 +70,14 @@ const renderUI = (status = RenderStatus.ALL, data = null, dataDict = null) => {
             break;
 
         case RenderStatus.UPDATE:
-            Object.values(dataDict).forEach((data) => {
-                // 해당 data에 해당하는 카드와 그래프
+            dataList.forEach((data) => {
                 const graph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
                 const card = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
                 updateGraph(data, graph);
                 updateCard(data, card);
             });
             break;
-        
+    
         case RenderStatus.DELETE:
             const graph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
             const card = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
@@ -80,16 +89,14 @@ const renderUI = (status = RenderStatus.ALL, data = null, dataDict = null) => {
     }
 
     updateJSONTextarea();
-    // 데이터 수에 따라 각 섹션을 보여줄 지 결정(데이터가 없을 땐, 값 추가에 관련된 섹션만 보이도록)
-    updateSectionVisibility(); 
+    updateSectionVisibility();
     showAddButtonOnGraph();
-    
     window.scrollTo({ top: 0, behavior: 'smooth' }); // 스크롤 맨 위로 이동
 };
 
 const renderGraph = (data) => {
-    // HTML 템플릿을 복사해 그래프 생성
-    const template = document.querySelector('.graph-template').content.cloneNode(true);
+    // 위에서 캐싱한 템플릿을 복사해 그래프 생성
+    const template = graphTemplate.content.cloneNode(true);
     const graph = template.querySelector('.graph-wrapper');
 
     initGraph(data, graph);
@@ -118,7 +125,7 @@ const animateGraph = (targetValue, barElement, valueText) => {
         const currentValue = originValue + delta * progress;
         setElementText(valueText, Math.floor(currentValue));
         valueText.style.setProperty('--graph-value-color', color);
-        barElement.style.setProperty('--graph-height', `${(currentValue / 100) * GRAPH_BG_HEIGHT}rem`);
+        barElement.style.setProperty('--graph-height', `${(currentValue / 100) * GRAPH_MAX_HEIGHT}rem`);
         barElement.style.setProperty('--graph-color', color);
 
         if (progress < 1) requestAnimationFrame(animate);
@@ -135,7 +142,7 @@ const updateGraph = (data, graph) => {
 };
 
 const renderCard = (data) => {
-    const template = document.querySelector('.card-template').content.cloneNode(true);
+    const template = cardTemplate.content.cloneNode(true);
     const card = template.querySelector('.card-wrapper');
 
     initCard(data, card);
@@ -171,7 +178,7 @@ const onDelete = (e, data, card) => {
     // fadeOut 애니메이션 종료 후 카드를 삭제
     card.addEventListener("animationend", () => {
         dataManager.deleteData(data.id);
-        renderUI(RenderStatus.DELETE, data);
+        renderByStatus(RenderStatus.DELETE, data);
     }, { once: true });
 };
 
@@ -187,6 +194,7 @@ const updateCard = (data, card) => {
 
 // Textarea에 JSON 반영
 const updateJSONTextarea = () => {
+    // JSON 객체로 변환 후 dataList에 세팅
     const dataList = dataManager.getDataList().map((data) => data.toJSON());
     let jsonText = '';
     
@@ -198,21 +206,22 @@ const updateJSONTextarea = () => {
 
 // 데이터 수에 따라 각 Section 표시 여부 결정
 const updateSectionVisibility = () => {
-    const hasData = dataManager.getDataList().length > 0;
     let addDescription;
     let advancedEditTitle;
-    let sectionVisibility;
+    let visibility;
+    
+    const hasData = dataManager.getDataList().length > 0;
 
     if (hasData) {
-        addSection.classList.remove('no-value');
+        addSection.classList.remove(POSITION_EMPTY);
         addDescription = "새로운 값을 추가하면 그래프가 달라져요!";
         advancedEditTitle = "JSON으로 값 편집하기";
-        sectionVisibility = '';
+        visibility = 'block';
     } else {
-        addSection.classList.add('no-value');
+        addSection.classList.add(POSITION_EMPTY);
         addDescription = "아직 데이터가 없네요. 새로운 값을 추가해보세요!";
         advancedEditTitle = "JSON으로 값 추가하기";
-        sectionVisibility = 'none';
+        visibility = 'none';
         idInput.focus();
     }
     
@@ -221,12 +230,13 @@ const updateSectionVisibility = () => {
     setElementText(addSectionDescription, addDescription);
     setElementText(jsonSectionTitle, advancedEditTitle);
 
-    graphSection.style.display = sectionVisibility;
-    editSection.style.display = sectionVisibility;
+    // 데이터가 없다면, 값 추가에 관련된 섹션만 보여줌
+    graphSection.style.display = visibility;
+    editSection.style.display = visibility;
 };
 
 const getColor = (value) => {
-    return value >= 100 ? COLOR_HIGH_VALUE : value >= 50 ? COLOR_MEDIUM_VALUE : COLOR_LOW_VALUE;
+    return value >= 100 ? COLOR_HIGH : value >= 50 ? COLOR_MEDIUM : COLOR_LOW;
 };
 
 // 가장 끝에 있는 그래프의 오른쪽에 + 버튼을 추가
@@ -249,8 +259,8 @@ const clearFields = () => {
     setElementValue(valueInput, '');
     setElementText(inputFeedBackText, '');
     setElementText(jsonFeedbackText, '');
-    addValueButton.classList.remove(ACTIVE_COLOR);
-    applyAdvancedValueButton.classList.remove(ACTIVE_COLOR);
+    addValueButton.classList.remove(BUTTON_ACTIVE);
+    applyAdvancedValueButton.classList.remove(BUTTON_ACTIVE);
 };
 
 const isInputValidate = (id, value) => {
@@ -281,10 +291,10 @@ const resetValues = () => {
 
 const setApplyButtonVisible = (isShow) => {
     if (isShow) {
-        editButtonTable.classList.add('active', 'slide-right');
+        editButtonTable.classList.add('active', SLIDE_SHOW);
     } else {
-        editButtonTable.classList.remove('slide-right');
-        editButtonTable.classList.add('slide-left');
+        editButtonTable.classList.remove(SLIDE_SHOW);
+        editButtonTable.classList.add(SLIDE_HIDE);
         editButtonTable.addEventListener('animationend', (e) => {
             e.preventDefault();
             editButtonTable.classList.remove('active');
@@ -318,7 +328,7 @@ const initEventListeners = () => {
         const id = idInput.value.trim();
         const value = valueInput.value.trim();
         let feedback = '';
-        addValueButton.classList.remove(ACTIVE_COLOR);
+        addValueButton.classList.remove(BUTTON_ACTIVE);
         
         const isValueValidNumber = !isNaN(value);
 
@@ -332,7 +342,7 @@ const initEventListeners = () => {
             feedback = '* 값은 숫자만 입력할 수 있어요.';
         } else {
             feedback = '';
-            addValueButton.classList.add(ACTIVE_COLOR);
+            addValueButton.classList.add(BUTTON_ACTIVE);
         }
         setElementText(inputFeedBackText, feedback);
     };
@@ -343,9 +353,9 @@ const initEventListeners = () => {
         const text = jsonTextarea.value;
 
         if (text.trim()) {
-            applyAdvancedValueButton.classList.add(ACTIVE_COLOR);
+            applyAdvancedValueButton.classList.add(BUTTON_ACTIVE);
         } else {
-            applyAdvancedValueButton.classList.remove(ACTIVE_COLOR);
+            applyAdvancedValueButton.classList.remove(BUTTON_ACTIVE);
         }
     };
 
@@ -389,9 +399,9 @@ const initEventListeners = () => {
             // 기존의 value에도 수정한 내용 반영
             setElementValue(originData, data.value);
         }
-        renderUI(RenderStatus.UPDATE, null, edittedDataDict);
+        renderByStatus(RenderStatus.UPDATE, null, Object.values(edittedDataDict));
         setApplyButtonVisible(false);
-    }
+    }   
 
     const onCancelEdit = (e) => {
         e.preventDefault();
@@ -411,7 +421,7 @@ const initEventListeners = () => {
 
         const newData = new Data(id, value);
         dataManager.addData(newData);
-        renderUI(RenderStatus.ADD, newData);
+        renderByStatus(RenderStatus.ADD, newData);
         clearFields();
     };
 
@@ -454,7 +464,7 @@ const initEventListeners = () => {
                 dataManager.addData(data);
             }
             
-            renderUI(RenderStatus.ALL);
+            renderByStatus(RenderStatus.ALL);
             clearFields();
             setApplyButtonVisible(false);
         } catch (error) {
@@ -478,4 +488,4 @@ const initEventListeners = () => {
 
 initEventListeners();
 // 초기 렌더링
-renderUI(RenderStatus.ALL);
+renderByStatus(RenderStatus.ALL);

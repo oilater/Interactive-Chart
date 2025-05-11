@@ -373,8 +373,8 @@ header .applicant-name {
     color: white;
     text-align: center;
     margin-left: 2rem;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 4rem;
+    height: 2.5rem;
     cursor: pointer;
     transition: background-color 0.3s ease-in;
 }
@@ -395,7 +395,7 @@ header .applicant-name {
 }
 
 /* 진입화면 또는 데이터가 없을 때 */
-.no-value {
+.no-value-positon {
     margin-top: 4rem;
 }
 
