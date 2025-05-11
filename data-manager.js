@@ -21,13 +21,12 @@ class Data {
     }
 }
 
-// DataManager:
 // _dataStore 객체를 통해 데이터를 관리하며, 데이터 접근 메서드를 제공하는 클래스
 class DataManager {
     static _instance = null; 
     
     // Data를 저장하는 dataStore
-    _dataStore = {};
+    _dataStore = new Map();
     subscribers = new Set();
 
     // 싱글톤 인스턴스 반환
@@ -61,16 +60,16 @@ class DataManager {
     addData(data) {
         if (!data) return;
         
-        this._dataStore[data.id] = data;
+        this._dataStore.set(data.id, data);
         this._notify(DataChange.ADD, data);
     }
 
     getDataById(id) {
-        const data = this._dataStore[id];
+        const data = this._dataStore.get(id);
 
         if (!data) return null;
         
-        return this._dataStore[id];
+        return data;
     }
 
     updateDataById(id, value) {
@@ -82,21 +81,21 @@ class DataManager {
     }
     
     deleteData(id) {
-        if (!this._dataStore || !this._dataStore[id]) return;
+        if (!this._dataStore.has(id)) return;
 
-        delete this._dataStore[id];
+        this._dataStore.delete(id);
         this._notify(DataChange.DELETE);
     }
     
     clear() {
-        this._dataStore = {};
+        this._dataStore.clear();
         this._notify(DataChange.CLEAR);
     }
 
     // dataStore를 배열로 반환
     getDataList() {
         if (this._dataStore) {
-            return Object.values(this._dataStore);
+            return [...this._dataStore.values()];
         } else {
             return [];
         }
@@ -107,6 +106,6 @@ class DataManager {
     }
 
     IsExistId(id) {
-        return this.getDataList().some(data => data.id === id.toString());
+        return this._dataStore.has(id.toString());
     }
 }

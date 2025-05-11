@@ -1,4 +1,4 @@
-// 이벤트를 받아 처리하고, 랜더링 함수를 정의한 클래스
+// 이벤트를 받아 처리하고, 랜더링에 함수를 정의한 클래스
 
 // 상수
 const MAX_ID_LENGTH = 6;
@@ -52,6 +52,7 @@ const render = (type, data = null) => {
             break;
 
         case DataChange.UPDATE:
+            // 그래프 생성 시에 설정한 data-id를 통해 가져옴
             const targetGraph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
             const targetCard = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
             if (!targetGraph || !targetCard) return;
@@ -79,7 +80,7 @@ const render = (type, data = null) => {
 };
 
 const renderGraph = (data) => {
-    // 위에서 캐싱한 템플릿을 복사해 그래프 생성
+    // 템플릿을 복사해 그래프 생성
     const template = graphTemplate.content.cloneNode(true);
     const graph = template.querySelector('.graph-wrapper');
 
@@ -97,7 +98,6 @@ const initGraph = (data, graph) => {
     animateGraph(data.value, barElement, valueElement);
 }
 
-// 그래프 애니메이션 실행
 const animateGraph = (targetValue, barElement, valueText) => {
     const color = getColor(targetValue);
     const startTime = performance.now();
@@ -118,7 +118,6 @@ const animateGraph = (targetValue, barElement, valueText) => {
     requestAnimationFrame(animate);
 };
 
-// 편집한 값에 해당하는 그래프 업데이트
 const updateGraph = (data, graph) => {
     const graphBar = graph.querySelector('.graph');
     const graphValue = graph.querySelector('.graph-value');
@@ -132,12 +131,11 @@ const renderCard = (data) => {
     cardTable.appendChild(card);
 };
 
-// 생성한 카드 초기화
 const initCard = (data, card) => {
     const idElement = card.querySelector('.card-id');
     const valueElement = card.querySelector('.card-value');
     const deleteButton = card.querySelector('.card-delete-button');
-    const color = getColor(data.value); // value에 따라 색상을 지정
+    const color = getColor(data.value);
     
     card.dataset.id = data.id; // 값 편집 및 삭제 시 카드를 참조하기 위한 data-id 적용
     setElementText(idElement, data.id);
@@ -177,7 +175,7 @@ const onDelete = (e, data, card) => {
     }, { once: true });
 };
 
-// Textarea에 JSON 반영
+// rhrmq
 const updateJSONTextarea = () => {
     let jsonText = '';
     // JSON 객체로 변환 후 dataList에 세팅
@@ -212,13 +210,10 @@ const updateSectionVisibility = () => {
     const jsonSectionTitle = document.querySelector(".edit-advanced-title");
     setElementText(addSectionDescription, addDescription);
     setElementText(jsonSectionTitle, advancedEditTitle);
-
-    // 데이터가 없다면, 값 추가에 관련된 섹션만 보여줌
     graphSection.style.display = visibility;
     editSection.style.display = visibility;
 };
 
-// 값에 따라 색상을 설정
 const getColor = (value) => {
     return value >= 100 ? COLOR_HIGH : value >= 50 ? COLOR_MEDIUM : COLOR_LOW;
 };
