@@ -1,4 +1,25 @@
-/* 섹션 초기화 슬라이드 애니메이션 */
+/* [공통 CSS] */
+/* 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: #1a1a1a;
+}
+
+/* 버튼 공통 속성 */
+.button-base {
+    all: unset;
+    border-radius: 20rem;
+    text-align: center;
+    width: 4rem;
+    height: 2.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in;
+}
+
+/* [애니메이션] */
+/* 섹션 초기화 시 부드럽게 나타나는 효과 */
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -11,6 +32,7 @@
     }
 }
 
+/* 오른쪽으로 슬라이드 하면서 사라지는 효과 */
 @keyframes slideRight {
     from {
         opacity: 0;
@@ -23,6 +45,7 @@
     }
 }
 
+/* 왼쪽으로 슬라이드 하면서 사라지는 효과 */
 @keyframes slideLeft {
     from {
         opacity: 1;
@@ -35,7 +58,7 @@
     }
 }
 
-/* 그래프 추가 버튼 애니메이션 */
+/* 위 아래로 살짝 움직이는 애니메이션 */
 @keyframes floatUpDown {
 
     0%,
@@ -60,7 +83,7 @@
     }
 }
 
-/* 페이드 인 애니메이션 */
+/* 페이드 인 효과 */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -73,7 +96,7 @@
     }
 }
 
-/* 페이드 아웃 애니메이션 */
+/* 페이드 아웃 효과 */
 @keyframes fadeOut {
     from {
         opacity: 1;
@@ -84,38 +107,47 @@
     }
 }
 
+/* [동적 클래스] */
+/* element 숨기기 */
 .hidden {
     display: none;
 }
 
+/* element 보이기 */
 .visible {
     display: block;
 }
 
+/* 진입화면 또는 데이터가 없을 때 */
+.no-value-positon {
+    margin-top: 4rem;
+}
+
+/* slideLeft 애니메이션 실행 */
 .slide-left {
     animation: slideLeft 0.3s ease-in-out;
 }
 
+/* slideRight 애니메이션 실행 */
 .slide-right {
     animation: slideRight 0.3s ease-in-out;
 }
 
-/* fade-out 애니메이션 설정 */
+/* 카드, 그래프 삭제 시 fade-out 애니메이션 설정 */
 .card-wrapper.fade-out,
 .graph-wrapper.fade-out {
     animation: fadeOut 0.3s forwards ease-in-out;
 }
 
-/* 기본 CSS 초기화 */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    color: #1a1a1a;
+/* 버튼 활성화 */
+.add-value-section .active-button,
+.edit-advanced-value-section .active-button {
+    background-color: dodgerblue;
+    color: white;
 }
 
-/* 섹션 */
-body section {
+/* [섹션] */
+section {
     max-width: 50vw;
     min-height: 20vh;
     margin: 0 auto;
@@ -145,7 +177,7 @@ section .section-description {
     color: #80808066;
 }
 
-/* 헤더 */
+/* [헤더] */
 header {
     height: 5rem;
     display: flex;
@@ -153,14 +185,16 @@ header {
     align-items: center;
 }
 
+/* 지원자 명 */
 header .applicant-name {
     margin-right: 3rem;
+    font-size: 1.3rem;
+    font-weight: 600;
 }
 
 /* [그래프] */
-
 /* 동적 그래프 컨테이너 */
-.graph-section .graph-table {
+.graph-table {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -168,7 +202,7 @@ header .applicant-name {
     text-align: center;
 }
 
-/* 각 그래프 Wrapper */
+/* 각 그래프 wrapper */
 .graph-wrapper {
     display: flex;
     position: relative;
@@ -176,10 +210,6 @@ header .applicant-name {
     align-items: center;
     animation: fadeIn 1s ease-out;
     transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
-}
-
-.graph-table .graph-wrapper:last-child::after:hover {
-    background-color: dodgerblue;
 }
 
 /* 각 그래프 회색 배경 */
@@ -196,7 +226,7 @@ header .applicant-name {
 }
 
 /* 그래프 막대 */
-.graph-background .graph {
+.graph-wrapper .graph {
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
     border-bottom-left-radius: 0.4rem;
@@ -206,23 +236,23 @@ header .applicant-name {
     background-color: var(--graph-color, dodgerblue);
 }
 
-/* 그래프 하단 id */
-.graph-id {
+/* 그래프 id */
+.graph-wrapper .graph-id {
     padding-top: 2rem;
     font-size: 1.1rem;
     font-weight: 400;
 }
 
-/* 그래프 상단 value */
-.graph-value {
+/* 그래프 value */
+.graph-wrapper .graph-value {
     padding-bottom: 0.5rem;
     font-size: 2rem;
     color: var(--graph-value-color, dodgerblue);
     font-weight: 600;
 }
 
-/* 맨 우측 그래프 오른쪽의 값 추가 버튼 */
-.graph-add-table {
+/* 맨 우측 그래프 오른쪽의 값 추가 버튼 영역 */
+.graph-wrapper .graph-add-table {
     position: absolute;
     right: -10rem;
     top: 40%;
@@ -232,10 +262,12 @@ header .applicant-name {
     display: none;
 }
 
+/* 마지막 그래프의 add 버튼만 보이도록 설정 */
 .graph-wrapper:last-child .graph-add-table {
     display: block;
 }
 
+/* 그래프 add 버튼 */
 .graph-add-table .graph-add-button {
     all: unset;
     width: 100%;
@@ -252,6 +284,7 @@ header .applicant-name {
     transition: color 0.2s ease-in, background-color 0.2s ease-in, border-color 0.2s ease-in;
 }
 
+/* 그래드 add 버튼 hover 효과 */
 .graph-add-table .graph-add-button:hover {
     background-color: dodgerblue;
     border-color: dodgerblue;
@@ -260,46 +293,37 @@ header .applicant-name {
 }
 
 /* [값 편집] */
+/* 타이틀 */
 .edit-value-title-section {
     display: flex;
     align-items: center;
 }
 
+/* 값 수정 시 Apply, Cancel 버튼이 나오는 영역 */
 .edit-apply-section {
     display: none;
 }
 
+/* 수정하려고 값 클릭 시 보이도록 active 클래스 추가  */
 .edit-apply-section.active {
     display: flex;
 }
 
+/* Apply 버튼 */
 .apply-all-edit-button {
-    all: unset;
     background-color: dodgerblue;
-    border-radius: 20rem;
     color: white;
-    text-align: center;
     margin-left: 1rem;
-    width: 4rem;
-    height: 2.5rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in;
-}
-
-.cancel-all-edit-button {
-    all: unset;
-    border-radius: 20rem;
-    color: dodgerblue;
-    text-align: center;
-    margin-left: 2rem;
-    width: 4rem;
-    height: 2.5rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in;
 }
 
 .apply-all-edit-button:hover {
     background-color: #1873cc;
+}
+
+/* Cancel 버튼 */
+.cancel-all-edit-button {
+    color: dodgerblue;
+    margin-left: 2rem;
 }
 
 /* 카드 테이블 */
@@ -345,13 +369,15 @@ header .applicant-name {
     color: dodgerblue;
 }
 
+/* 카드 삭제 버튼 영역 */
 .card-actions {
     position: absolute;
     gap: 0.8rem;
     bottom: -2.5rem;
 }
 
-.card-delete-button {
+/* 카드 삭제 버튼 */
+.card-actions .card-delete-button {
     all: unset;
     font-size: 1rem;
     background-color: white;
@@ -360,25 +386,21 @@ header .applicant-name {
     cursor: pointer;
 }
 
-/* 값 고급 편집 */
+/* [값 고급 편집] */
+/* 테이블 */
 .edit-advanced-table {
     display: flex;
 }
 
-.edit-advanced-table .apply-advanced-value-button,
+/* 고급 편집 Apply 버튼 */
+.apply-advanced-value-button,
 .add-value-section button {
-    all: unset;
     background-color: #cfcfcf66;
-    border-radius: 20rem;
     color: white;
-    text-align: center;
     margin-left: 2rem;
-    width: 4rem;
-    height: 2.5rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in;
 }
 
+/* JSON Textarea */
 .edit-advanced-value-section .advanced-value-textarea {
     width: 43rem;
     height: 20rem;
@@ -390,16 +412,13 @@ header .applicant-name {
     box-sizing: border-box;
 }
 
+/* Textarea Placeholder */
 .edit-advanced-value-section .advanced-value-textarea::placeholder {
     color: #80808083;
 }
 
-/* 진입화면 또는 데이터가 없을 때 */
-.no-value-positon {
-    margin-top: 4rem;
-}
-
 /* [값 추가] */
+/* Input */
 .add-value-section input {
     all: unset;
     margin-right: 1rem;
@@ -415,25 +434,23 @@ header .applicant-name {
     text-overflow: ellipsis;
 }
 
+/* Input Placeholder */
 .add-value-section input::placeholder {
     color: #80808066;
     opacity: 1;
 }
 
+/* Input focus 시 border 색상 설정 */
 .add-value-section input:focus {
     border-bottom: 0.1rem solid dodgerblue;
 }
 
-.add-value-section .active-button,
-.edit-advanced-value-section .active-button {
-    background-color: dodgerblue;
-    color: white;
-}
-
+/* Add 버튼 hover 시 색상 변경 */
 .add-value-section button:hover {
     background-color: #1873cc;
 }
 
+/* 유효성 검사 시 피드백 텍스트 */
 .feedback-text,
 .json-feedback-text {
     margin-top: 1.3rem;

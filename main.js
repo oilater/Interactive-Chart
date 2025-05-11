@@ -12,11 +12,12 @@ const COLOR_MEDIUM = 'dodgerblue';
 const COLOR_LOW = '#1e90ff80';
 
 // 동적으로 추가되는 클래스
-const ACTIVE = 'active'; // display가 block 또는 none이 될 때
-const BUTTON_ACTIVE = 'active-button'; // 버튼이 활성화될 때
-const POSITION_EMPTY = 'no-value-positon'; // 초기화면 값 추가 섹션의 margin 값 지정
+const ACTIVE = 'active'; // display: 'block' 추가 또는 제거
+const BUTTON_ACTIVE = 'active-button'; // 유효성 검사 통과 후 버튼이 활성화될 때
+const POSITION_EMPTY = 'no-value-positon'; // 값이 없는 경우 섹션의 margin 값 지정
 const SLIDE_SHOW = 'slide-right'; // 값 편집 후 apply, cancel 버튼 보여줄 때
 const SLIDE_HIDE = 'slide-left'; // 값 편집 후 apply, cancel 버튼 숨길 때
+const FADE_OUT = 'fade-out'; // 페이드 아웃 효과
 
 // DOM 엘리먼트
 const graphTemplate = document.querySelector('.graph-template');
@@ -48,7 +49,6 @@ const RenderStatus = Object.freeze({
     DELETE: Symbol('DELETE'), // 수정된 데이터 리스트에 해당하는 그래프, 카드 렌더링
     UPDATE: Symbol('UPDATE'), // 삭제된 데이터에 해당하는 그래프, 카드 삭제
 });
-
 
 // RenderStatus에 따라 랜더링
 const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
@@ -174,7 +174,7 @@ const onDelete = (e, data, card) => {
     e.preventDefault();
     clearFields();
     setApplyButtonVisible(false);
-    card.classList.add("fade-out");
+    card.classList.add(FADE_OUT);
     // fadeOut 애니메이션 종료 후 카드를 삭제
     card.addEventListener("animationend", () => {
         dataManager.deleteData(data.id);
@@ -194,9 +194,9 @@ const updateCard = (data, card) => {
 
 // Textarea에 JSON 반영
 const updateJSONTextarea = () => {
+    let jsonText = '';
     // JSON 객체로 변환 후 dataList에 세팅
     const dataList = dataManager.getDataList().map((data) => data.toJSON());
-    let jsonText = '';
     
     if (dataList.length !== 0) {
         jsonText = JSON.stringify(dataList, null, 2);
@@ -291,13 +291,13 @@ const resetValues = () => {
 
 const setApplyButtonVisible = (isShow) => {
     if (isShow) {
-        editButtonTable.classList.add('active', SLIDE_SHOW);
+        editButtonTable.classList.add(ACTIVE, SLIDE_SHOW);
     } else {
         editButtonTable.classList.remove(SLIDE_SHOW);
         editButtonTable.classList.add(SLIDE_HIDE);
         editButtonTable.addEventListener('animationend', (e) => {
             e.preventDefault();
-            editButtonTable.classList.remove('active');
+            editButtonTable.classList.remove(ACTIVE);
         }, { once: true });
     }
 };
