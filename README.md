@@ -24,7 +24,7 @@
 Data를 정의하고, 접근 메서드를 제공합니다.
 
 - Data
-  - 필드로 id, value를 가지고 있음
+<br>
 ```
 class Data {
     constructor(id, value) {
@@ -33,27 +33,25 @@ class Data {
     }
 }
 ```
+<br>
 - DataManager
   - 여러 Data 객체를 관리하고, 데이터 접근 메서드를 제공
+<br>
+
 ```
 class DataManager {
-    static #instance = null;
 
-    #dataStore = {};
+    addData(data) {} // 데이터 추가
 
-    static getInstance() {}
+    getDataById(id) {} // id로 데이터 조회 후 반환
 
-    addData(data) {}
-
-    getDataById(id) {}
-
-    updateDataById(id, newValue) {}
+    updateDataById(id, newValue) {} // id로 데이터를 조회 후 새로운 값으로 업데이트
     
-    deleteData(id) {}
+    deleteData(id) {} // 데이터 삭제
 
-    clear() {}
+    clear() {} // 전체 데이터 초기화
 
-    getDataList() {}
+    getDataList() {} // 전체 데이터를 배열로 반환
 ```
 
 <br>
@@ -62,32 +60,20 @@ class DataManager {
 ---
 이벤트에 따라 데이터를 추가, 수정, 삭제하고 카드와 그래프 UI를 렌더링합니다.
 <br>
-
-- RenderStatus
-  - 불필요한 UI 렌더링을 방지하기 위해 상태(State) 디자인 패턴을 사용하였습니다.
-  - Enum과 유사한 효과를 위해 Object.freeze와 Symbol을 조합하여 정의하였습니다:
-```
 <br>
-const RenderStatus = Object.freeze({
-    ALL: Symbol('ALL'),
-    ADD: Symbol('ADD'),
-    DELETE: Symbol('DELETE'),
-    UPDATE: Symbol('UPDATE'),
-});
-```
 
--renderByStatus
+- renderByStatus
   - RenderStatus 값에 따라 UI 렌더링을 다르게 처리하는 함수입니다.
   <br>
-  - `ALL`: 전체를 초기화하여 다시 렌더링
-  - `ADD`: 단일 데이터 추가 렌더링
-  - `UPDATE`: 기존 데이터를 업데이트하여 반영
-  - `DELETE`: 특정 데이터를 제거
+  - `ALL`: 전체를 초기화하여 다시 렌더링<br>
+  - `ADD`: 단일 데이터 추가 렌더링<br>
+  - `UPDATE`: 기존 데이터를 업데이트하여 반영<br>
+  - `DELETE`: 특정 데이터를 제거<br>
 
   @param
-  - `status`: 렌더링하고자 하는 Status (ALL, ADD, DELETE, UPDATE)
-  - `data`: 추가 또는 삭제하려는 데이터
-  - `dataList`: 수정한 데이터들을 담은 배열
+  - `status`: 렌더링하고자 하는 Status (ALL, ADD, DELETE, UPDATE)<br>
+  - `data`: 추가 또는 삭제하려는 데이터<br>
+  - `dataList`: 수정한 데이터들을 담은 배열<br
 ```
 // RenderStatus에 따라 랜더링
 const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
