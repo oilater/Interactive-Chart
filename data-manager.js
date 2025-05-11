@@ -3,7 +3,7 @@
 // 데이터가 변경되면 구독자(main.js의 render 함수)에게 알람을 보내는 역할을 담당하는 스크립트
 
 // 데이터의 변경 타입
-const ChangeType = Object.freeze({
+const DataChange = Object.freeze({
     ADD: Symbol('ADD'), // 데이터 추가
     UPDATE: Symbol('UPDATE'), // 데이터 수정
     DELETE: Symbol('DELETE'), // 데이터 삭제
@@ -62,7 +62,7 @@ class DataManager {
         if (!data) return;
         
         this._dataStore[data.id] = data;
-        this._notify(ChangeType.ADD, data);
+        this._notify(DataChange.ADD, data);
     }
 
     getDataById(id) {
@@ -78,19 +78,19 @@ class DataManager {
         if (data) {
             data.value = value;
         }
-        this._notify(ChangeType.UPDATE, data);
+        this._notify(DataChange.UPDATE, data);
     }
     
     deleteData(id) {
         if (!this._dataStore || !this._dataStore[id]) return;
 
         delete this._dataStore[id];
-        this._notify(ChangeType.DELETE);
+        this._notify(DataChange.DELETE);
     }
     
     clear() {
         this._dataStore = {};
-        this._notify(ChangeType.CLEAR);
+        this._notify(DataChange.CLEAR);
     }
 
     // dataStore를 배열로 반환
@@ -100,5 +100,13 @@ class DataManager {
         } else {
             return [];
         }
+    }
+
+    hasData() {
+        return this.getDataList().length !== 0;
+    }
+
+    IsExistId(id) {
+        return this.getDataList().some(data => data.id === id.toString());
     }
 }
