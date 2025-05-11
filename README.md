@@ -25,7 +25,8 @@ Data를 정의하고, 접근 메서드를 제공합니다.
 
 - Data
 <br>
-```
+
+```javascript
 class Data {
     constructor(id, value) {
         this.id = id;
@@ -38,7 +39,7 @@ class Data {
   - 여러 Data 객체를 관리하고, 데이터 접근 메서드를 제공
 <br>
 
-```
+```javascript
 class DataManager {
 
     addData(data) {} // 데이터 추가
@@ -65,16 +66,21 @@ class DataManager {
 - renderByStatus
   - RenderStatus 값에 따라 UI 렌더링을 다르게 처리하는 함수입니다.
   <br>
+  
   - `ALL`: 전체를 초기화하여 다시 렌더링<br>
   - `ADD`: 단일 데이터 추가 렌더링<br>
   - `UPDATE`: 기존 데이터를 업데이트하여 반영<br>
   - `DELETE`: 특정 데이터를 제거<br>
 
-  @param
+
+  - @param
+    
   - `status`: 렌더링하고자 하는 Status (ALL, ADD, DELETE, UPDATE)<br>
   - `data`: 추가 또는 삭제하려는 데이터<br>
   - `dataList`: 수정한 데이터들을 담은 배열<br
-```
+
+
+```javascript
 // RenderStatus에 따라 랜더링
 const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
     switch (status) {
