@@ -17,7 +17,7 @@ const BUTTON_ACTIVE = 'active-button'; // 유효성 검사 통과 후 버튼이 
 const POSITION_EMPTY = 'no-value-positon'; // 값이 없는 경우 섹션의 margin 값 지정
 const SLIDE_SHOW = 'slide-right'; // 값 편집 후 apply, cancel 버튼 보여줄 때
 const SLIDE_HIDE = 'slide-left'; // 값 편집 후 apply, cancel 버튼 숨길 때
-const FADE_OUT = 'fade-out'; // 페이드 아웃 효과
+const FADE_OUT = 'fade-out'; // 카드 페이드 아웃 효과
 
 // DOM 엘리먼트
 const graphTemplate = document.querySelector('.graph-template');
@@ -39,46 +39,25 @@ const jsonFeedbackText = document.querySelector(".json-feedback-text");
 const idInput = document.querySelector("#id-input");
 const valueInput = document.querySelector("#value-input");
 
-// dataManager 인스턴스 생성
+// DataManager 인스턴스 생성
 const dataManager = DataManager.getInstance();
 
-// 효율적인 렌더링을 위한 상태
-const RenderStatus = Object.freeze({
-    ALL: Symbol('ALL'), // 전체 그래프, 카드 렌더링
-    ADD: Symbol('ADD'), // 추가된 데이터에 해당하는 그래프, 카드 렌더링
-    DELETE: Symbol('DELETE'), // 수정된 데이터 리스트에 해당하는 그래프, 카드 렌더링
-    UPDATE: Symbol('UPDATE'), // 삭제된 데이터에 해당하는 그래프, 카드 삭제
-});
-
-// RenderStatus에 따라 랜더링
-const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
+// 데이터 변경 시 호출되는 callback 함수
+const render = (status, data = null) => {
     switch (status) {
-        case RenderStatus.ALL:
-            // 테이블 초기화
-            graphTable.replaceChildren();
-            cardTable.replaceChildren();
-            
-            dataManager.getDataList().forEach((data) => {
-                renderGraph(data);
-                renderCard(data);
-            });
-            break;
-
-        case RenderStatus.ADD:
+        case ChangeType.ADD:
             renderGraph(data);
             renderCard(data);
             break;
 
-        case RenderStatus.UPDATE:
-            dataList.forEach((data) => {
-                const graph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
-                const card = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
-                updateGraph(data, graph);
-                updateCard(data, card);
-            });
+        case ChangeType.UPDATE:
+            const graphToUpdate = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
+            const cardToUpdate = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
+            updateGraph(data, graphToUpdate);
+            updateCard(data, cardToUpdate);
             break;
     
-        case RenderStatus.DELETE:
+        case ChangeType.DELETE:
             const graph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
             const card = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
             if (!graph || !card) return;
@@ -86,6 +65,10 @@ const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null)
             removeCardEventListeners(card);
             card.remove();
             break;
+
+        case ChangeType.CLEAR:
+            graphTable.replaceChildren();
+            cardTable.replaceChildren();
     }
 
     updateJSONTextarea();
@@ -165,6 +148,16 @@ const initCard = (data, card) => {
     deleteButton.addEventListener('click', (e) => onDelete(e, data, card));
 };
 
+// 편집한 값에 해당하는 카드 업데이트
+const updateCard = (data, card) => {
+    const cardValue = card.querySelector('.card-value');
+    const color = getColor(data.value);
+
+    setElementText(cardValue, data.value);
+    cardValue.style.color = color;
+    card.style.borderColor = color;
+};
+
 const onEditting = (e) => {
     e.preventDefault();
     setApplyButtonVisible(true);
@@ -178,18 +171,8 @@ const onDelete = (e, data, card) => {
     // fadeOut 애니메이션 종료 후 카드를 삭제
     card.addEventListener("animationend", () => {
         dataManager.deleteData(data.id);
-        renderByStatus(RenderStatus.DELETE, data);
+        render(ChangeType.DELETE, data);
     }, { once: true });
-};
-
-// 편집한 값에 해당하는 카드 업데이트
-const updateCard = (data, card) => {
-    const cardValue = card.querySelector('.card-value');
-    const color = getColor(data.value);
-
-    setElementText(cardValue, data.value);
-    cardValue.style.color = color;
-    card.style.borderColor = color;
 };
 
 // Textarea에 JSON 반영
@@ -388,18 +371,14 @@ const initEventListeners = () => {
             return;
         }
             
-        // 기존 데이터와 비교해서 값이 달라진 데이터만 edittedDataDict에 담음
+        // 값이 달라진 데이터만 업데이트
         for (const data of extractedDataList) {
             const originData = dataManager.getDataById(data.id);
     
             if (!originData) continue;
             if (originData.value === data.value) continue;
-    
-            edittedDataDict[data.id] = data;
-            // 기존의 value에도 수정한 내용 반영
-            setElementValue(originData, data.value);
+            dataManager.updateDataById(data.id, data.value);
         }
-        renderByStatus(RenderStatus.UPDATE, null, Object.values(edittedDataDict));
         setApplyButtonVisible(false);
     }   
 
@@ -421,7 +400,6 @@ const initEventListeners = () => {
 
         const newData = new Data(id, value);
         dataManager.addData(newData);
-        renderByStatus(RenderStatus.ADD, newData);
         clearFields();
     };
 
@@ -445,26 +423,25 @@ const initEventListeners = () => {
                 const trimmedId = id?.trim();
                 if (!trimmedId) {
                     setElementText(jsonFeedbackText, '* 아이디에 빈 값이 있습니다.');
-                    return;
+                    break;
                 }
                 if (trimmedId.length > MAX_ID_LENGTH) {
                     setElementText(jsonFeedbackText, '* 아이디는 6자 이하로 입력해주세요.');
-                    return;
+                    break;
                 }
                 if (!Number.isFinite(value) || value.toString().length > MAX_VALUE_LENGTH) {
                     setElementText(jsonFeedbackText, '* 값은 7자리 이하의 숫자로 입력해주세요.');
-                    return;
+                    break;
                 }
                 if (isExistId(trimmedId)) {
                     setElementText(jsonFeedbackText, '* 중복된 아이디가 있어요.');
-                    return;
+                    break;
                 }
-                
+
                 const data = new Data(trimmedId, value);
                 dataManager.addData(data);
             }
-            
-            renderByStatus(RenderStatus.ALL);
+
             clearFields();
             setApplyButtonVisible(false);
         } catch (error) {
@@ -486,6 +463,5 @@ const initEventListeners = () => {
     applyAdvancedValueButton.addEventListener('click', onApplyAdvancedValue);
 };
 
+dataManager.subscribe(render);
 initEventListeners();
-// 초기 렌더링
-renderByStatus(RenderStatus.ALL);
