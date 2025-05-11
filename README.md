@@ -20,11 +20,10 @@
 
 
 ### 📉 data-manager.js
----
-Data를 정의하고, 접근 메서드를 제공합니다.
+
 
 - Data
-
+  - id, value로 이루어진 데이터를 정의합니다. 
 
 ```javascript
 class Data {
@@ -37,8 +36,8 @@ class Data {
 <br>
 
 - DataManager
-  - 여러 Data 객체를 관리하고, 데이터 접근 메서드를 제공
-<br>
+  - 여러 Data 객체를 관리하고, 데이터 접근 메서드를 제공합니다.
+
 
 ```javascript
 class DataManager {
@@ -62,7 +61,7 @@ class DataManager {
 
 
 이벤트에 따라 데이터를 추가, 수정, 삭제하고 카드와 그래프 UI를 렌더링합니다.
-<br>
+
 <br>
 
 - RenderStatus
@@ -77,49 +76,9 @@ class DataManager {
 - renderByStatus
   - RenderStatus 값에 따라 UI 렌더링을 다르게 처리하는 함수입니다. <br>
   - Parameters <br>
+  
       - `status`: 렌더링하고자 하는 Status <br>
       - `data`: 추가 또는 삭제하려는 데이터 <br>
       - `dataList`: 수정한 데이터들을 담은 배열 <br>
 
 
-```javascript
-// RenderStatus에 따라 랜더링
-const renderByStatus = (status = RenderStatus.ALL, data = null, dataList = null) => {
-    switch (status) {
-        case RenderStatus.ALL:
-            dataManager.getDataList().forEach((data) => {
-                renderGraph(data);
-                renderCard(data);
-            });
-            break;
-
-        case RenderStatus.ADD:
-            renderGraph(data);
-            renderCard(data);
-            break;
-
-        case RenderStatus.UPDATE:
-            dataList.forEach((data) => {
-                const graph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
-                const card = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
-                updateGraph(data, graph);
-                updateCard(data, card);
-            });
-            break;
-    
-        case RenderStatus.DELETE:
-            const graph = graphTable.querySelector(`.graph-wrapper[data-id="${data?.id}"]`);
-            const card = cardTable.querySelector(`.card-wrapper[data-id="${data?.id}"]`);
-            if (!graph || !card) return;
-            graph.remove();
-            removeCardEventListeners(card);
-            card.remove();
-            break;
-    }
-
-    // 공통 실행 로직
-    updateJSONTextarea(); // JSON 업데이트
-    updateSectionVisibility(); // 데이터의 수에 따라 섹션을 표시
-    showAddButtonOnGraph(); // 마지막 그래프 오른쪽에 + 버튼 생성
-};
-```
