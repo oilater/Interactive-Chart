@@ -175,7 +175,7 @@ const onDelete = (e, data, card) => {
     }, { once: true });
 };
 
-// rhrmq
+// 고급 값 편집 창 업데이트
 const updateJSONTextarea = () => {
     let jsonText = '';
     // JSON 객체로 변환 후 dataList에 세팅
