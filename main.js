@@ -264,14 +264,18 @@ const resetValues = () => {
 };
 
 const setApplyButtonVisible = (isShow) => {
+    const isVisibleNow = editButtonTable.classList.contains(ACTIVE);
+
     if (isShow) {
+        if (isVisibleNow) return;
+        editButtonTable.classList.remove(SLIDE_HIDE);
         editButtonTable.classList.add(ACTIVE, SLIDE_SHOW);
     } else {
+        if (!isVisibleNow) return;
         editButtonTable.classList.remove(SLIDE_SHOW);
         editButtonTable.classList.add(SLIDE_HIDE);
-        editButtonTable.addEventListener('animationend', (e) => {
-            e.preventDefault();
-            editButtonTable.classList.remove(ACTIVE);
+        editButtonTable.addEventListener('animationend', () => {
+            editButtonTable.classList.remove(ACTIVE, SLIDE_HIDE);
         }, { once: true });
     }
 };
