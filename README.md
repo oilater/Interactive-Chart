@@ -109,6 +109,7 @@
         getDataById(id) {} 
         updateDataById(id, newValue) {} 
         ..
+    }
     ```
 
 <br>
