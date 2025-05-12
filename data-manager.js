@@ -1,6 +1,5 @@
 // data-manager.js
-// 데이터 매니저를 통해 데이터를 관리하고,
-// 데이터가 변경되면 구독자(main.js의 render 함수)에게 알람을 보내는 역할을 담당하는 스크립트
+// 데이터 매니저를 통해 데이터를 관리하고, 데이터가 변경되면 구독자(main.js의 render 함수)에게 알람을 보내는 역할을 담당
 
 // 데이터의 변경 타입
 const DataChange = Object.freeze({
