@@ -92,6 +92,7 @@
     
         _notify(type, data = null) {      
             for (const callback of this.subscribers) {
+                if (!callback) return;
                 // 콜백 실행
                 callback(type, data);
             }
