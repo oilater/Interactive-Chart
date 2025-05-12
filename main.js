@@ -242,7 +242,7 @@ const clearFields = () => {
     applyJSONButton.classList.remove(BUTTON_ACTIVE);
 };
 
-const isInputValidate = (id, value) => {
+const isValidateInput = (id, value) => {
     if (!id.trim()) {
         return false;
     } else if (!value.trim() || isNaN(value)) {
@@ -332,17 +332,22 @@ const onApplyEdits = (e) => {
     const cards = [...cardTable.querySelectorAll('.card-wrapper')];
     if (cards.length === 0) return;
     
+    // 수정된 값들에 대한 유효성 검사
+    const hasInvalidInput = cards.some(card => {
+        const id = card.querySelector('.card-id').textContent;
+        const value = card.querySelector('.card-value').value;
+        return !isValidateInput(id, value);
+    });
+
+    if (hasInvalidInput) {
+        alert('숫자가 아닌 값이 있어요!');
+        return;
+    }
+    
     // 카드들을 돌면서 데이터를 추출하여 저장
     const extractedDataList = cards.reduce((acc, card) => {
         const id = card.querySelector('.card-id').textContent;
         const value = card.querySelector('.card-value').value;
-    
-        // 숫자가 아닌 값이 있다면 로직 종료
-        if (!isInputValidate(id, value)) {
-            alert('숫자가 아닌 값이 있어요!');
-            return;
-        }
-        // 통과했다면 새로운 Data를 추가
         acc.push(new Data(id, value));
         return acc;
     }, []);
@@ -374,7 +379,7 @@ const onAddValue = (e) => {
     e.preventDefault();
     const id = idInput.value;
     const value = valueInput.value;
-    if (!isInputValidate(id, value)) return;
+    if (!isValidateInput(id, value)) return;
 
     if (dataManager.IsExistId(id)) {
         setElementText(inputFeedBackText, '* 이미 등록된 아이디에요.')
