@@ -1,7 +1,14 @@
 # 📊 Interactive Chart
 
-안녕하세요. 아이엠파인 SD팀에 지원하게 된 김성현이라고 합니다.<br>
-프로젝트를 보다 쉽게 참고하실 수 있도록, 간단한 코드 소개를 덧붙였습니다.<br>
+데이터가 변하면 동적으로 차트가 그려지는 어플리케이션입니다. <br>
+프로젝트를 보다 쉽게 참고하실 수 있도록, 주요 클래스를 위주로 간단한 소개를 덧붙입니다.<br>
+
+
+### 사용 언어
+```
+HTML5, CSS3, Javascript
+```
+
 
 ## 1. Preview
 ![interactive-chart](https://github.com/user-attachments/assets/5af65b56-eb4c-4ebc-9e7a-f6f3f033bdf5)
