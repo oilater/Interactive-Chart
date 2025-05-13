@@ -42,8 +42,9 @@ const valueInput = document.querySelector("#value-input");
 // DataManager 인스턴스 생성
 const dataManager = DataManager.getInstance();
 
-// 데이터 변경 시 콜백으로 호출되는 함수
-// type에 따라 랜더링 범위를 결정 (삭제의 경우 data는 null)
+/** 데이터 변경 시 콜백으로 호출되는 함수 
+ * type에 따라 랜더링 범위를 결정 (삭제의 경우 data는 null) 
+*/
 const render = (type, data = null) => {
     switch (type) {
         case DataChange.ADD:
@@ -147,7 +148,7 @@ const initCard = (data, card) => {
 };
 
 
-// 편집한 값에 해당하는 카드 업데이트
+/** 편집한 값에 해당하는 카드 업데이트 */
 const updateCard = (data, card) => {
     const cardValue = card.querySelector('.card-value');
     const color = getColor(data.value);
@@ -175,7 +176,7 @@ const onDelete = (e, data, card) => {
     }, { once: true });
 };
 
-// 고급 값 편집 창 업데이트
+/** 고급 값 편집 창 업데이트 */
 const updateJSONTextarea = () => {
     let jsonText = '';
     // JSON 객체로 변환 후 dataList에 세팅
@@ -187,7 +188,7 @@ const updateJSONTextarea = () => {
     setElementValue(jsonTextarea, jsonText);
 };
 
-// 데이터 수에 따라 각 Section 표시 여부 결정
+/** 데이터 수에 따라 각 Section 표시 여부 결정 */
 const updateSectionVisibility = () => {
     let addDescription;
     let advancedEditTitle;
@@ -218,7 +219,7 @@ const getColor = (value) => {
     return value >= 100 ? COLOR_HIGH : value >= 50 ? COLOR_MEDIUM : COLOR_LOW;
 };
 
-// 가장 끝에 있는 그래프의 오른쪽에 + 버튼을 추가
+/** 가장 끝에 있는 그래프의 오른쪽에 + 버튼을 추가 */
 const showAddButtonOnGraph = () => {
     const graphs = [...document.querySelectorAll('.graph-wrapper')];
     if (graphs.length === 0) return;
@@ -232,7 +233,7 @@ const showAddButtonOnGraph = () => {
     });
 };
 
-// 입력 필드 및 버튼 초기화
+/** 입력 필드 및 버튼 초기화 */
 const clearFields = () => {
     setElementValue(idInput, '');
     setElementValue(valueInput, '');
@@ -263,6 +264,7 @@ const resetValues = () => {
     }
 };
 
+ /** 값 편집 시 Apply, Cancel 버튼을 띄우거나 숨김 */
 const setApplyButtonVisible = (isShow) => {
     const isVisibleNow = editButtonTable.classList.contains(ACTIVE);
 
@@ -292,7 +294,7 @@ const setElementValue = (element, value) => {
     element.value = value;
 }
 
-// Input의 입력 이벤트를 받아 체크 후 feedback 텍스트, 버튼 색 결정
+/** Input의 입력 이벤트를 받아 체크 후 feedback 텍스트, 버튼 색 결정 */
 const onCheckInput = (e) => {
     e.preventDefault();
     const id = idInput.value.trim();
@@ -316,7 +318,7 @@ const onCheckInput = (e) => {
     setElementText(inputFeedBackText, feedback);
 };
 
-// 고급 값 편집 Textarea의 입력 이벤트를 받아 체크 후 버튼 색 결정
+/** 고급 값 편집 Textarea의 입력 이벤트를 받아 체크 후 버튼 색 결정 */
 const onCheckTextarea = (e) => {
     e.preventDefault();
     const text = jsonTextarea.value;
@@ -328,7 +330,7 @@ const onCheckTextarea = (e) => {
     }
 };
 
-// 값들을 수정하고 Apply 버튼을 누를 때
+/** 값들을 수정하고 Apply 버튼을 누를 때 */
 const onApplyEdits = (e) => {
     e.preventDefault();
 
@@ -371,14 +373,14 @@ const onApplyEdits = (e) => {
     setApplyButtonVisible(false);
 };
 
-// 수정을 취소할 때
+/** 수정을 취소할 때 */
 const onCancelEdit = (e) => {
     e.preventDefault();
     setApplyButtonVisible(false);
     resetValues();
 };
 
-// 값을 추가할 떄
+/** 값을 추가할 떄 */
 const onAddValue = (e) => {
     e.preventDefault();
     const id = idInput.value;
@@ -395,7 +397,7 @@ const onAddValue = (e) => {
     clearFields();
 };
 
-// JSON 입력 후 적용할 때
+/** JSON 입력 후 적용할 때 */
 const onApplyJSON = (e) => {
     e.preventDefault();
     try {
@@ -443,13 +445,10 @@ const onApplyJSON = (e) => {
 };
 
 const initEventListeners = () => { 
-    // 입력값 유효성 검사
     idInput.addEventListener('input', onCheckInput);
     valueInput.addEventListener('input', onCheckInput);
     jsonTextarea.addEventListener('input', onCheckTextarea);
-    // 값 추가
     addValueButton.addEventListener('click', onAddValue);
-    // 값 편집 및 값 고급 편집
     applyEditButton.addEventListener('click', onApplyEdits);
     cancelEditButton.addEventListener('click', onCancelEdit);
     applyJSONButton.addEventListener('click', onApplyJSON);
@@ -459,5 +458,4 @@ const initEventListeners = () => {
 dataManager.subscribe(render);
 initEventListeners();
 
-// 초기화면에 값 추가 섹션만 보이도록 설정
 updateSectionVisibility();

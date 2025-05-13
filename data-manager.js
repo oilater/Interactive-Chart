@@ -1,12 +1,17 @@
 // data-manager.js
 // 데이터 매니저를 통해 데이터를 관리하고, 데이터가 변경되면 구독자(main.js의 render 함수)에게 알람을 보내는 역할을 담당
 
-// 데이터의 변경 타입
+/** 데이터의 변경 타입 
+ * ADD: 데이터 추가
+ * UPDATE: 데이터 수정
+ * DELETE: 데이터 삭제
+ * CLEAR: 데이터 초기화 (JSON 업데이트 시 호출)
+*/
 const DataChange = Object.freeze({
-    ADD: Symbol('ADD'), // 데이터 추가
-    UPDATE: Symbol('UPDATE'), // 데이터 수정
-    DELETE: Symbol('DELETE'), // 데이터 삭제
-    CLEAR: Symbol('CLEAR'), // 데이터 초기화 (JSON 업데이트 시 호출)
+    ADD: Symbol('ADD'),
+    UPDATE: Symbol('UPDATE'),
+    DELETE: Symbol('DELETE'),
+    CLEAR: Symbol('CLEAR'),
 });
 
 class Data {
@@ -20,7 +25,7 @@ class Data {
     }
 }
 
-// _dataStore 객체를 통해 데이터를 관리하며, 데이터 접근 메서드를 제공하는 클래스
+/** _dataStore 객체를 통해 데이터를 관리하며, 데이터 접근 메서드를 제공하는 클래스 */
 class DataManager {
     static _instance = null; 
     
@@ -36,15 +41,18 @@ class DataManager {
         return this._instance;
     }
 
-    // 구독자 추가
+    /** 구독자 추가 */
     subscribe(callback) {
         this.subscribers.add(callback);
     }
 
-    // 구독자에게 데이터 변경을 알림
-    // [매개변수]
-    // type: ChangeType (ADD, UPDATE, DELETE, CLEAR)
-    // data: 삭제의 경우에는 data를 받지 않음
+    /**
+     * 구독자에게 데이터 변경을 알림
+     *
+     * @params
+     * - type: ChangeType (ADD, UPDATE, DELETE, CLEAR)
+     * - data: 삭제의 경우에는 data를 받지 않음
+     */
     _notify(type, data = null) {
         for (const callback of this.subscribers) {
             // 구독자가 없다면
@@ -55,7 +63,6 @@ class DataManager {
         }
     }
 
-    // dataStore 접근 메서드
     addData(data) {
         if (!data) return;
         
@@ -91,7 +98,7 @@ class DataManager {
         this._notify(DataChange.CLEAR);
     }
 
-    // dataStore를 배열로 반환
+    /** dataStore를 배열로 반환 */
     getDataList() {
         if (this._dataStore) {
             return [...this._dataStore.values()];
