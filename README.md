@@ -30,7 +30,7 @@ HTML5, CSS3, Javascript
 
 
 `main.js`<br>
-- UI 처리를 담당하며, 이벤트 처리, DOM 요소 제어, 그래프 및 카드 랜더링을 위한 `render()` 함수를 정의합니다.
+- UI와 이벤트 처리를 담당하며, 그래프 및 카드 랜더링을 위한 `render()` 함수를 정의합니다.
 
 
 `data-manager.js`<br>
