@@ -1,4 +1,4 @@
-![제목-없음](https://github.com/user-attachments/assets/ae13bfba-04c1-4b5c-ba75-8ce20d64c7f9)# 📊 React 없이 Interactive Chart 만들기
+# 📊 React 없이 Interactive Chart 만들기
 
 순수 자바스크립트를 이용해 데이터가 변하면 동적으로 차트가 그려지는 어플리케이션을 개발했습니다. <br>
 프로젝트를 보다 쉽게 참고하실 수 있도록, 주요 클래스를 위주로 간단한 소개를 덧붙입니다.<br>
