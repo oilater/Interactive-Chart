@@ -14,8 +14,7 @@ HTML5, CSS3, Javascript
 
 ![제목-없음](https://github.com/user-attachments/assets/e11cc6b0-a691-4800-9697-530773a9710e)
 
->자세한 개발 과정 👇🏻
-https://velog.io/@oilater/%EC%9D%BC%EC%A3%BC%EC%9D%BC-%EA%B0%84-%EA%B3%BC%EC%A0%9C%ED%95%98%EA%B3%A0-1%EB%B6%84%EB%A7%8C%EC%97%90-%EB%96%A8%EC%96%B4%EC%A7%84-SSUL
+[👉 자세한 개발 과정 보러가기](https://velog.io/@oilater/%EC%9D%BC%EC%A3%BC%EC%9D%BC-%EA%B0%84-%EA%B3%BC%EC%A0%9C%ED%95%98%EA%B3%A0-1%EB%B6%84%EB%A7%8C%EC%97%90-%EB%96%A8%EC%96%B4%EC%A7%84-SSUL)
 
 <br>
 <br>
