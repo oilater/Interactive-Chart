@@ -11,7 +11,8 @@ HTML5, CSS3, Javascript
 
 
 ## 1. Preview
-![interactive-chart](https://github.com/user-attachments/assets/5af65b56-eb4c-4ebc-9e7a-f6f3f033bdf5)
+
+![그래프](https://github.com/user-attachments/assets/21260f9c-a7a7-4f4f-ae68-0fa447a75d91)
 
 <br>
 <br>
